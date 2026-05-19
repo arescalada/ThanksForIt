@@ -1,0 +1,17 @@
+voluntario@voluntario.com — password123
+voluntario1@voluntario.com — password123
+voluntario2@voluntario.com — password123
+voluntario3@voluntario.com — password123
+voluntario4@voluntario.com — password123
+
+entidadsocial@entidadsocial.com — password123
+entidadsocial1@entidadsocial.com — password123
+entidadsocial2@entidadsocial.com — password123
+entidadsocial3@entidadsocial.com — password123
+entidadsocial4@entidadsocial.com — password123
+
+empresacultural@empresacultural.com — password123
+empresacultural1@empresacultural.com — password123
+empresacultural2@empresacultural.com — password123
+empresacultural3@empresacultural.com — password123
+empresacultural4@empresacultural.com — password123
