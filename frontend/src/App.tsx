@@ -62,7 +62,7 @@ function App() {
       if (filtromunicipio) params.append('municipio', filtromunicipio)
       if (filtroTipo) params.append('tipo', filtroTipo)
       if (filtroFecha) params.append('fecha_inicio', filtroFecha)
-      const res = await axios.get(`/api/actividades?${params.toString()}`)
+      const res = await axios.get(`${API_URL}/api/actividades?${params.toString()}`)
       setActividadesPublicas(res.data)
     } catch (err) {
       console.error(err)
@@ -74,7 +74,7 @@ function App() {
 
   const handleLogin = async () => {
     try {
-      const res = await axios.post(\\/api/auth/login', { email, password })
+      const res = await axios.post(`${API_URL}/api/auth/login`, { email, password })
       sessionStorage.setItem('token', res.data.token)
       setUsuario(res.data.usuario)
       setError('')
@@ -651,4 +651,7 @@ function App() {
 }
 
 export default App
+
+
+
 
