@@ -1,0 +1,12 @@
+TOKEN
+
+
+
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJkM2NiM2I5LWUxOWQtNDg1OC05YTczLTkwYjJjYTNlNjkxZCIsImVtYWlsIjoianVhbkB0ZXN0LmNvbSIsInRpcG9fdXN1YXJpbyI6InZvbHVudGFyaW8iLCJpYXQiOjE3NzU4MTIzNjgsImV4cCI6MTc3NjQxNzE2OH0.aBqvxf16s8MxnedYi2P9z2RTFy3EqaYotrGhh_4Ks7M",
+  "usuario": {
+    "id": "bd3cb3b9-e19d-4858-9a73-90b2ca3e691d",
+    "email": "juan@test.com",
+    "tipo_usuario": "voluntario"
+  }
+}
