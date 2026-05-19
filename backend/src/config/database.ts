@@ -1,6 +1,5 @@
 import { Pool } from 'pg';
 import dotenv from 'dotenv';
-
 dotenv.config();
 
 const pool = new Pool({
@@ -9,6 +8,7 @@ const pool = new Pool({
   database: process.env.DB_NAME || 'plataforma_voluntariado',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
   max: 20,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,
