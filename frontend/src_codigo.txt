@@ -1,0 +1,2662 @@
+﻿
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\Actividades.tsx =====
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+
+interface Actividad {
+  id: string
+  nombre: string
+  descripcion: string
+  municipio: string
+  fecha_inicio: string
+  num_voluntarios_objetivo: number
+}
+
+interface Props {
+  onBack: () => void
+}
+
+export default function Actividades({ onBack }: Props) {
+  const [actividades, setActividades] = useState<Actividad[]>([])
+  const [loading, setLoading] = useState(true)
+  const [municipio, setMunicipio] = useState('')
+  const [inscribiendo, setInscribiendo] = useState<string | null>(null)
+  const [mensajes, setMensajes] = useState<Record<string, { texto: string; tipo: 'ok' | 'error' }>>({})
+
+  useEffect(() => { cargarActividades() }, [])
+
+  const cargarActividades = async () => {
+    try {
+      setLoading(true)
+      const params = municipio ? `?municipio=${municipio}` : ''
+      const res = await axios.get(`/api/actividades${params}`)
+      setActividades(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const inscribirse = async (actividadId: string) => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      setMensajes(m => ({ ...m, [actividadId]: { texto: 'Debes iniciar sesiÃ³n', tipo: 'error' } }))
+      return
+    }
+    try {
+      setInscribiendo(actividadId)
+      await axios.post(`/api/inscripciones/${actividadId}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      setMensajes(m => ({ ...m, [actividadId]: { texto: 'Â¡Inscrito correctamente!', tipo: 'ok' } }))
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Error al inscribirse'
+      setMensajes(m => ({ ...m, [actividadId]: { texto: msg, tipo: 'error' } }))
+    } finally {
+      setInscribiendo(null)
+    }
+  }
+
+  const formatFecha = (fecha: string) =>
+    new Date(fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <nav className="px-6 py-4 flex justify-between items-center shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <h1 className="text-xl font-bold text-white">ðŸŽ­ Voluntariado Cultural</h1>
+        <button onClick={onBack} className="text-sm font-semibold px-4 py-2 rounded-xl transition border border-white text-white hover:bg-white hover:text-green-800">
+          â† Volver al dashboard
+        </button>
+      </nav>
+
+      <div className="max-w-6xl mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-2">ðŸ“‹ Actividades de Voluntariado</h2>
+        <p className="text-gray-500 mb-6">Encuentra actividades y apÃºntate como voluntario</p>
+
+        <div className="bg-white rounded-xl shadow p-4 mb-6 flex gap-4">
+          <input
+            className="flex-1 border rounded-lg p-3"
+            placeholder="Filtrar por municipio..."
+            value={municipio}
+            onChange={e => setMunicipio(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && cargarActividades()}
+          />
+          <button onClick={cargarActividades} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+            Buscar
+          </button>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12 text-gray-400">
+            <p className="text-4xl mb-2">â³</p>
+            <p>Cargando actividades...</p>
+          </div>
+        ) : actividades.length === 0 ? (
+          <div className="text-center py-12 text-gray-400 bg-white rounded-xl shadow">
+            <p className="text-4xl mb-2">ðŸ“­</p>
+            <p>No hay actividades disponibles</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {actividades.map(actividad => {
+              const mensaje = mensajes[actividad.id]
+              const yaInscrito = mensaje?.tipo === 'ok'
+              return (
+                <div key={actividad.id} className="bg-white rounded-xl shadow p-6 hover:shadow-md transition">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold text-lg">{actividad.nombre}</h3>
+                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Abierta</span>
+                  </div>
+                  <p className="text-gray-500 text-sm mb-4">{actividad.descripcion}</p>
+                  <div className="space-y-1 text-sm text-gray-600 mb-4">
+                    <p>ðŸ“ {actividad.municipio}</p>
+                    <p>ðŸ“… {formatFecha(actividad.fecha_inicio)}</p>
+                    <p>ðŸ‘¥ {actividad.num_voluntarios_objetivo} voluntarios necesarios</p>
+                  </div>
+                  {mensaje && (
+                    <p className={`text-sm mb-2 text-center font-medium ${mensaje.tipo === 'ok' ? 'text-green-600' : 'text-red-500'}`}>
+                      {mensaje.tipo === 'ok' ? 'âœ…' : 'âŒ'} {mensaje.texto}
+                    </p>
+                  )}
+                  <button
+                    onClick={() => inscribirse(actividad.id)}
+                    disabled={inscribiendo === actividad.id || yaInscrito}
+                    className={`w-full rounded-lg py-2 text-sm font-semibold transition ${
+                      yaInscrito
+                        ? 'bg-green-100 text-green-700 cursor-default'
+                        : 'bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50'
+                    }`}
+                  >
+                    {inscribiendo === actividad.id ? 'Inscribiendo...' : yaInscrito ? 'âœ… Inscrito' : 'Inscribirme'}
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\Admin.tsx =====
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+
+interface Usuario {
+  id: string
+  email: string
+  tipo_usuario: string
+  created_at: string
+}
+
+interface HoraPendiente {
+  id: string
+  voluntario_nombre: string
+  actividad_nombre: string
+  horas: number
+  fecha_registro: string
+  notas: string
+}
+
+interface Estadisticas {
+  total_usuarios: number
+  total_voluntarios: number
+  total_horas_validadas: number
+  total_canjes: number
+}
+
+interface Props {
+  onLogout: () => void
+}
+
+export default function Admin({ onLogout }: Props) {
+  const [tab, setTab] = useState<'estadisticas' | 'usuarios' | 'horas'>('estadisticas')
+  const [usuarios, setUsuarios] = useState<Usuario[]>([])
+  const [horasPendientes, setHorasPendientes] = useState<HoraPendiente[]>([])
+  const [stats, setStats] = useState<Estadisticas>({ total_usuarios: 0, total_voluntarios: 0, total_horas_validadas: 0, total_canjes: 0 })
+  const [loading, setLoading] = useState(false)
+
+  const token = localStorage.getItem('token')
+  const headers = { Authorization: `Bearer ${token}` }
+
+  useEffect(() => {
+    cargarEstadisticas()
+  }, [])
+
+  useEffect(() => {
+    if (tab === 'usuarios') cargarUsuarios()
+    if (tab === 'horas') cargarHorasPendientes()
+  }, [tab])
+
+  const cargarEstadisticas = async () => {
+    try {
+      const res = await axios.get('/api/admin/estadisticas', { headers })
+      setStats(res.data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const cargarUsuarios = async () => {
+    try {
+      setLoading(true)
+      const res = await axios.get('/api/admin/usuarios', { headers })
+      setUsuarios(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const cargarHorasPendientes = async () => {
+    try {
+      setLoading(true)
+      const res = await axios.get('/api/admin/horas-pendientes', { headers })
+      setHorasPendientes(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const validarHora = async (horaId: string, aprobar: boolean) => {
+    try {
+      const endpoint = aprobar ? `/api/admin/horas/${horaId}/validar` : `/api/admin/horas/${horaId}/rechazar`
+await axios.put(endpoint, {}, { headers })
+      cargarHorasPendientes()
+      cargarEstadisticas()
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al validar hora')
+    }
+  }
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      {/* Navbar */}
+      <nav className="px-6 py-4 flex justify-between items-center shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">ðŸŒ¿</span>
+          <span className="font-bold text-lg text-white" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Panel de AdministraciÃ³n</span>
+        </div>
+        <button
+          onClick={onLogout}
+          className="text-sm font-semibold px-4 py-2 rounded-xl transition border border-white text-white hover:bg-white hover:text-green-800"
+        >
+          Cerrar sesiÃ³n
+        </button>
+      </nav>
+
+      <div className="max-w-6xl mx-auto p-6">
+        {/* TÃ­tulo */}
+        <div className="rounded-3xl p-8 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-8xl opacity-20">âš™ï¸</div>
+          <h2 className="text-3xl font-bold text-white mb-1">Panel de AdministraciÃ³n</h2>
+          <p className="text-green-100">Gestiona usuarios, valida horas y consulta estadÃ­sticas</p>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab('estadisticas')}
+            className={`px-5 py-2 rounded-xl font-medium text-sm transition ${tab === 'estadisticas' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            style={tab === 'estadisticas' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}
+          >
+            ðŸ“Š EstadÃ­sticas
+          </button>
+          <button
+            onClick={() => setTab('usuarios')}
+            className={`px-5 py-2 rounded-xl font-medium text-sm transition ${tab === 'usuarios' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            style={tab === 'usuarios' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}
+          >
+            ðŸ‘¥ Usuarios
+          </button>
+          <button
+            onClick={() => setTab('horas')}
+            className={`px-5 py-2 rounded-xl font-medium text-sm transition ${tab === 'horas' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            style={tab === 'horas' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}
+          >
+            â±ï¸ Horas Pendientes
+          </button>
+        </div>
+
+        {/* Contenido */}
+        {tab === 'estadisticas' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ background: '#dcfce7' }}>ðŸ‘¥</div>
+              <p className="text-3xl font-bold mb-1" style={{ color: '#16a34a' }}>{stats.total_usuarios}</p>
+              <p className="text-sm text-gray-500">Total usuarios</p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ background: '#fef9c3' }}>ðŸ™‹</div>
+              <p className="text-3xl font-bold mb-1" style={{ color: '#ca8a04' }}>{stats.total_voluntarios}</p>
+              <p className="text-sm text-gray-500">Voluntarios</p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ background: '#ede9fe' }}>â±ï¸</div>
+              <p className="text-3xl font-bold mb-1" style={{ color: '#7c3aed' }}>{stats.total_horas_validadas}h</p>
+              <p className="text-sm text-gray-500">Horas validadas</p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 border border-gray-100">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl mb-4" style={{ background: '#fecaca' }}>ðŸŽŸï¸</div>
+              <p className="text-3xl font-bold mb-1" style={{ color: '#dc2626' }}>{stats.total_canjes}</p>
+              <p className="text-sm text-gray-500">Canjes realizados</p>
+            </div>
+          </div>
+        )}
+
+        {tab === 'usuarios' && (
+          loading ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+              <p className="text-4xl mb-2">â³</p>
+              <p>Cargando usuarios...</p>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl overflow-hidden border border-gray-100">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                  <tr>
+                    <th className="px-6 py-3 text-left">Email</th>
+                    <th className="px-6 py-3 text-left">Tipo</th>
+                    <th className="px-6 py-3 text-left">Registrado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {usuarios.map(u => (
+                    <tr key={u.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium">{u.email}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                          {u.tipo_usuario}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-gray-500">{new Date(u.created_at).toLocaleDateString('es-ES')}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        )}
+
+        {tab === 'horas' && (
+          loading ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+              <p className="text-4xl mb-2">â³</p>
+              <p>Cargando horas pendientes...</p>
+            </div>
+          ) : horasPendientes.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+              <p className="text-4xl mb-2">âœ…</p>
+              <p>No hay horas pendientes de validaciÃ³n</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {horasPendientes.map(h => (
+                <div key={h.id} className="bg-white rounded-2xl p-6 border border-gray-100">
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 className="font-semibold text-gray-800">{h.voluntario_nombre}</h3>
+                      <p className="text-sm text-gray-500">{h.actividad_nombre}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold" style={{ color: '#16a34a' }}>{h.horas}h</p>
+                      <p className="text-xs text-gray-400">{new Date(h.fecha_registro).toLocaleDateString('es-ES')}</p>
+                    </div>
+                  </div>
+                  {h.notas && (
+                    <p className="text-sm text-gray-600 mb-4 italic">"{h.notas}"</p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => validarHora(h.id, true)}
+                      className="flex-1 py-2 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
+                      style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
+                    >
+                      âœ… Aprobar
+                    </button>
+                    <button
+                      onClick={() => validarHora(h.id, false)}
+                      className="flex-1 py-2 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition"
+                    >
+                      âŒ Rechazar
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\Beneficios.tsx =====
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+
+interface Beneficio {
+  id: string
+  nombre: string
+  descripcion: string
+  coste_horas: number
+  categoria: string
+  condiciones: string
+  stock: number
+  nombre_empresa: string
+}
+
+interface Canje {
+  id: string
+  codigo_canje: string
+  beneficio_nombre: string
+  horas_consumidas: number
+  estado: string
+  fecha_generacion: string
+  fecha_expiracion: string
+}
+
+interface Props {
+  onBack: () => void
+}
+
+export default function Beneficios({ onBack }: Props) {
+  const [beneficios, setBeneficios] = useState<Beneficio[]>([])
+  const [canjes, setCanjes] = useState<Canje[]>([])
+  const [loading, setLoading] = useState(true)
+  const [tab, setTab] = useState<'disponibles' | 'mis-canjes'>('disponibles')
+  const [generando, setGenerando] = useState<string | null>(null)
+  const [mensajes, setMensajes] = useState<Record<string, { texto: string; tipo: 'ok' | 'error' }>>({})
+
+  const token = localStorage.getItem('token')
+  const headers = { Authorization: `Bearer ${token}` }
+
+  useEffect(() => {
+    cargarBeneficios()
+    cargarCanjes()
+  }, [])
+
+  const cargarBeneficios = async () => {
+    try {
+      const res = await axios.get('/api/beneficios')
+      setBeneficios(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const cargarCanjes = async () => {
+    try {
+      const res = await axios.get('/api/beneficios/mis-canjes', { headers })
+      setCanjes(res.data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const generarCanje = async (beneficioId: string) => {
+    try {
+      setGenerando(beneficioId)
+      await axios.post('/api/beneficios/canje', { beneficio_id: beneficioId }, { headers })
+      setMensajes(m => ({ ...m, [beneficioId]: { texto: 'Â¡CÃ³digo generado! MÃ­ralo en "Mis Canjes"', tipo: 'ok' } }))
+      cargarCanjes()
+    } catch (err: any) {
+      const msg = err.response?.data?.error || 'Error al generar canje'
+      setMensajes(m => ({ ...m, [beneficioId]: { texto: msg, tipo: 'error' } }))
+    } finally {
+      setGenerando(null)
+    }
+  }
+
+  const categoriaColor: Record<string, string> = {
+    'Teatro': 'bg-purple-100 text-purple-700',
+    'Cultura': 'bg-blue-100 text-blue-700',
+    'MÃºsica': 'bg-pink-100 text-pink-700',
+    'FormaciÃ³n': 'bg-green-100 text-green-700',
+  }
+
+  const estadoColor: Record<string, string> = {
+    'generado': 'bg-green-100 text-green-700',
+    'canjeado': 'bg-gray-100 text-gray-500',
+    'expirado': 'bg-red-100 text-red-500',
+    'cancelado': 'bg-red-100 text-red-500',
+  }
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <nav className="px-6 py-4 flex justify-between items-center shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <h1 className="text-xl font-bold text-white">ðŸŽ­ Voluntariado Cultural</h1>
+        <button onClick={onBack} className="text-sm font-semibold px-4 py-2 rounded-xl transition border border-white text-white hover:bg-white hover:text-green-800">
+          â† Volver al dashboard
+        </button>
+      </nav>
+
+      <div className="max-w-6xl mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-2">ðŸŽŸï¸ Beneficios Culturales</h2>
+        <p className="text-gray-500 mb-6">Canjea tus horas de voluntariado por experiencias culturales</p>
+
+        {/* Tabs */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab('disponibles')}
+            className={`px-5 py-2 rounded-lg font-medium text-sm transition ${tab === 'disponibles' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            Beneficios disponibles
+          </button>
+          <button
+            onClick={() => setTab('mis-canjes')}
+            className={`px-5 py-2 rounded-lg font-medium text-sm transition ${tab === 'mis-canjes' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            Mis canjes {canjes.length > 0 && `(${canjes.length})`}
+          </button>
+        </div>
+
+        {tab === 'disponibles' && (
+          loading ? (
+            <div className="text-center py-12 text-gray-400">
+              <p className="text-4xl mb-2">â³</p>
+              <p>Cargando beneficios...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {beneficios.map(b => {
+                const mensaje = mensajes[b.id]
+                return (
+                  <div key={b.id} className="bg-white rounded-xl shadow p-6">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="font-semibold text-lg">{b.nombre}</h3>
+                        <p className="text-gray-400 text-sm">{b.nombre_empresa}</p>
+                      </div>
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${categoriaColor[b.categoria] || 'bg-gray-100 text-gray-600'}`}>
+                        {b.categoria}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm mb-4">{b.descripcion}</p>
+                    {b.condiciones && (
+                      <p className="text-gray-400 text-xs mb-4 italic">ðŸ“‹ {b.condiciones}</p>
+                    )}
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="text-2xl font-bold text-blue-600">{b.coste_horas}h</span>
+                      <span className="text-sm text-gray-400">{b.stock} disponibles</span>
+                    </div>
+                    {mensaje && (
+                      <p className={`text-sm mb-2 text-center ${mensaje.tipo === 'ok' ? 'text-green-600' : 'text-red-500'}`}>
+                        {mensaje.tipo === 'ok' ? 'âœ…' : 'âŒ'} {mensaje.texto}
+                      </p>
+                    )}
+                    <button
+                      onClick={() => generarCanje(b.id)}
+                      disabled={generando === b.id}
+                      className="w-full bg-blue-600 text-white rounded-lg py-2 text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {generando === b.id ? 'Generando...' : 'Generar cÃ³digo de canje'}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )
+        )}
+
+        {tab === 'mis-canjes' && (
+          canjes.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-xl shadow">
+              <p className="text-4xl mb-2">ðŸŽ«</p>
+              <p>No tienes canjes todavÃ­a</p>
+              <p className="text-sm mt-1">Genera tu primer cÃ³digo desde "Beneficios disponibles"</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {canjes.map(c => (
+                <div key={c.id} className="bg-white rounded-xl shadow p-6">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold">{c.beneficio_nombre}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${estadoColor[c.estado] || 'bg-gray-100'}`}>
+                      {c.estado}
+                    </span>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4 text-center mb-4">
+                    <p className="text-xs text-gray-400 mb-1">CÃ³digo de canje</p>
+                    <p className="text-2xl font-mono font-bold text-blue-600 tracking-widest">{c.codigo_canje}</p>
+                  </div>
+                  <div className="text-sm text-gray-500 space-y-1">
+                    <p>â±ï¸ Horas consumidas: <span className="font-medium text-gray-700">{c.horas_consumidas}h</span></p>
+                    <p>ðŸ“… Generado: {new Date(c.fecha_generacion).toLocaleDateString('es-ES')}</p>
+                    <p>â³ Expira: {new Date(c.fecha_expiracion).toLocaleDateString('es-ES')}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\Dashboard.tsx =====
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import Actividades from './Actividades'
+import Beneficios from './Beneficios'
+import Horas from './Horas'
+import Perfil from './Perfil'
+
+interface Props {
+  usuario: { id: string; email: string; tipo_usuario: string }
+  onLogout: () => void
+}
+
+export default function Dashboard({ usuario, onLogout }: Props) {
+  const [vista, setVista] = useState<'dashboard' | 'actividades' | 'beneficios' | 'horas' | 'perfil'>('dashboard')
+  const [stats, setStats] = useState({ horas: 0, beneficios: 0, actividades: 0 })
+
+  const token = localStorage.getItem('token')
+  const headers = { Authorization: `Bearer ${token}` }
+
+  useEffect(() => { cargarStats() }, [])
+
+  const cargarStats = async () => {
+    try {
+      const [horasRes, beneficiosRes, actividadesRes] = await Promise.allSettled([
+        axios.get('/api/horas/mis-horas', { headers }),
+        axios.get('/api/beneficios', { headers }),
+        axios.get('/api/actividades')
+      ])
+      setStats({
+        horas: horasRes.status === 'fulfilled' ? (horasRes.value.data.resumen?.disponibles || 0) : 0,
+        beneficios: beneficiosRes.status === 'fulfilled' ? (beneficiosRes.value.data.length || beneficiosRes.value.data.beneficios?.length || 0) : 0,
+        actividades: actividadesRes.status === 'fulfilled' ? (actividadesRes.value.data.length || 0) : 0
+      })
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  if (vista === 'actividades') return <Actividades onBack={() => { setVista('dashboard'); cargarStats() }} />
+  if (vista === 'beneficios') return <Beneficios onBack={() => { setVista('dashboard'); cargarStats() }} />
+  if (vista === 'horas') return <Horas onBack={() => { setVista('dashboard'); cargarStats() }} />
+  if (vista === 'perfil') return <Perfil usuario={usuario} onBack={() => setVista('dashboard')} />
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <nav className="px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">ðŸŒ¿</span>
+          <span className="font-bold text-lg" style={{ color: 'white', textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>Voluntariado Cultural</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 bg-green-50 px-3 py-1.5 rounded-full">
+            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+            <span className="text-sm font-medium" style={{ color: '#15803d' }}>{usuario.email}</span>
+          </div>
+          <button
+            onClick={() => setVista('perfil')}
+            className="text-sm font-semibold px-4 py-2 rounded-xl transition border border-white text-white hover:bg-white hover:text-green-800"
+          >
+            ðŸ‘¤ Mi perfil
+          </button>
+          <button
+            onClick={onLogout}
+            className="text-sm font-semibold px-4 py-2 rounded-xl transition border border-white text-white hover:bg-white hover:text-green-800"
+          >
+            Cerrar sesiÃ³n
+          </button>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="rounded-3xl p-8 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-8xl opacity-20">ðŸŒ±</div>
+          <h2 className="text-3xl font-bold text-white mb-1">Â¡Bienvenido! ðŸ‘‹</h2>
+          <p className="text-green-100">Tu panel de voluntario â€” gestiona actividades y beneficios culturales</p>
+          <div className="mt-4 inline-flex items-center gap-2 bg-white bg-opacity-20 px-4 py-2 rounded-full">
+            <span className="text-white text-sm font-medium capitalize">ðŸ·ï¸ {usuario.tipo_usuario}</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <button onClick={() => setVista('horas')}
+            className="bg-white rounded-2xl p-6 text-left hover:shadow-md transition group border border-gray-100">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: '#dcfce7' }}>â±ï¸</div>
+              <span className="text-xs text-gray-400 group-hover:text-green-600 transition">Ver â†’</span>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#16a34a' }}>{stats.horas}h</p>
+            <p className="text-sm text-gray-500">Horas disponibles</p>
+            <p className="text-xs text-gray-400 mt-1">Para canjear</p>
+          </button>
+
+          <button onClick={() => setVista('beneficios')}
+            className="bg-white rounded-2xl p-6 text-left hover:shadow-md transition group border border-gray-100">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: '#fef9c3' }}>ðŸŽŸï¸</div>
+              <span className="text-xs text-gray-400 group-hover:text-green-600 transition">Ver â†’</span>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#ca8a04' }}>{stats.beneficios}</p>
+            <p className="text-sm text-gray-500">Beneficios disponibles</p>
+            <p className="text-xs text-gray-400 mt-1">Para canjear</p>
+          </button>
+
+          <button onClick={() => setVista('actividades')}
+            className="bg-white rounded-2xl p-6 text-left hover:shadow-md transition group border border-gray-100">
+            <div className="flex justify-between items-start mb-4">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl" style={{ background: '#ede9fe' }}>ðŸ“…</div>
+              <span className="text-xs text-gray-400 group-hover:text-green-600 transition">Ver â†’</span>
+            </div>
+            <p className="text-3xl font-bold mb-1" style={{ color: '#7c3aed' }}>{stats.actividades}</p>
+            <p className="text-sm text-gray-500">Actividades</p>
+            <p className="text-xs text-gray-400 mt-1">Disponibles ahora</p>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span>ðŸŽ­</span> Beneficios Culturales
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">Canjea tus horas por entradas, talleres y experiencias culturales Ãºnicas.</p>
+            <button onClick={() => setVista('beneficios')}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+              Ver beneficios
+            </button>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 border border-gray-100">
+            <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <span>ðŸ“‹</span> Actividades de Voluntariado
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">Explora actividades disponibles e inscrÃ­bete para acumular horas.</p>
+            <button onClick={() => setVista('actividades')}
+              className="w-full py-2.5 rounded-xl text-sm font-semibold transition hover:opacity-90 border-2"
+              style={{ borderColor: '#16a34a', color: '#16a34a' }}>
+              Explorar actividades
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\EmpresaDashboard.tsx =====
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
+interface Beneficio {
+  id: string
+  nombre: string
+  descripcion: string
+  coste_horas: number
+  stock_disponible: number
+  activo: boolean
+}
+
+interface Props {
+  usuario: { id: string; email: string; tipo_usuario: string }
+  onLogout: () => void
+}
+
+export default function EmpresaDashboard({ usuario, onLogout }: Props) {
+  const [vista, setVista] = useState<'dashboard' | 'nuevo'>('dashboard')
+  const [beneficios, setBeneficios] = useState<Beneficio[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [form, setForm] = useState({
+    nombre: '', descripcion: '', coste_horas: 1,
+    stock_disponible: '', fecha_caducidad: ''
+  })
+
+  const token = localStorage.getItem('token')
+  const headers = { Authorization: `Bearer ${token}` }
+
+  useEffect(() => { cargarBeneficios() }, [])
+
+  const cargarBeneficios = async () => {
+    try {
+      setLoading(true)
+      const res = await axios.get('/api/empresas/mis-beneficios', { headers })
+      setBeneficios(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCrear = async () => {
+    if (!form.nombre || !form.coste_horas) return setError('Nombre y coste en horas son obligatorios')
+    try {
+      setLoading(true)
+      await axios.post('/api/empresas/beneficios', {
+        ...form,
+        stock_disponible: form.stock_disponible ? parseInt(form.stock_disponible) : null,
+        fecha_caducidad: form.fecha_caducidad || null
+      }, { headers })
+      setSuccess('âœ… Beneficio publicado correctamente')
+      setError('')
+      setForm({ nombre: '', descripcion: '', coste_horas: 1, stock_disponible: '', fecha_caducidad: '' })
+      cargarBeneficios()
+      setVista('dashboard')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al crear beneficio')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <nav className="px-6 py-4 flex justify-between items-center shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">ðŸŒ¿</span>
+          <span className="font-bold text-lg text-white">Voluntariado Cultural</span>
+          <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.2)', color: 'white', padding: '2px 10px', borderRadius: '999px', marginLeft: '8px' }}>Empresa Cultural</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-green-100 text-sm hidden sm:block">{usuario.email}</span>
+          <button onClick={onLogout} className="text-sm font-semibold px-4 py-2 rounded-xl border border-white text-white hover:bg-white hover:text-green-800 transition">
+            Cerrar sesiÃ³n
+          </button>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="rounded-3xl p-8 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-8xl opacity-20">ðŸŽ­</div>
+          <h2 className="text-3xl font-bold text-white mb-1">Panel de Empresa Cultural</h2>
+          <p className="text-green-100">Publica beneficios culturales para los voluntarios</p>
+        </div>
+
+        {success && <div className="bg-green-50 text-green-700 p-4 rounded-2xl mb-4 text-sm">{success}</div>}
+
+        <div className="flex gap-2 mb-6">
+          <button onClick={() => setVista('dashboard')}
+            className={`px-5 py-2 rounded-xl font-medium text-sm transition ${vista === 'dashboard' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            style={vista === 'dashboard' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
+            ðŸŽŸï¸ Mis Beneficios
+          </button>
+          <button onClick={() => { setVista('nuevo'); setError(''); setSuccess('') }}
+            className={`px-5 py-2 rounded-xl font-medium text-sm transition ${vista === 'nuevo' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            style={vista === 'nuevo' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
+            âž• Nuevo Beneficio
+          </button>
+        </div>
+
+        {vista === 'dashboard' && (
+          loading ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+              <p className="text-4xl mb-2">â³</p><p>Cargando beneficios...</p>
+            </div>
+          ) : beneficios.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+              <p className="text-4xl mb-2">ðŸŽ­</p>
+              <p className="font-medium">No tienes beneficios publicados</p>
+              <p className="text-sm mt-1">Publica tu primer beneficio para que los voluntarios puedan canjearlo</p>
+              <button onClick={() => setVista('nuevo')}
+                className="mt-4 px-6 py-2 rounded-xl text-sm font-semibold text-white"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                âž• Publicar beneficio
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {beneficios.map(b => (
+                <div key={b.id} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-md transition">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold text-gray-800">{b.nombre}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${b.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {b.activo ? 'activo' : 'inactivo'}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">{b.descripcion}</p>
+                  <div className="space-y-1 text-xs text-gray-500">
+                    <p>â±ï¸ Coste: <span className="font-semibold text-green-600">{b.coste_horas}h</span></p>
+                    {b.stock_disponible && <p>ðŸ“¦ Stock: {b.stock_disponible} unidades</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {vista === 'nuevo' && (
+          <div className="bg-white rounded-2xl p-8 border border-gray-100">
+            <h3 className="text-lg font-semibold mb-6">âž• Nuevo Beneficio Cultural</h3>
+
+            {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>}
+
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Nombre del beneficio *</label>
+            <input className="w-full border border-gray-200 rounded-xl p-3 mb-4 text-sm focus:outline-none focus:border-green-500"
+              placeholder="Ej: Entrada al museo, Taller de cerÃ¡mica..."
+              value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+
+            <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">DescripciÃ³n</label>
+            <textarea className="w-full border border-gray-200 rounded-xl p-3 mb-4 text-sm focus:outline-none focus:border-green-500 h-24 resize-none"
+              placeholder="Describe el beneficio..."
+              value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Coste en horas *</label>
+                <input type="number" min="1" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  value={form.coste_horas} onChange={e => setForm({ ...form, coste_horas: parseInt(e.target.value) })} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Stock (opcional)</label>
+                <input type="number" min="1" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  placeholder="Ilimitado si vacÃ­o"
+                  value={form.stock_disponible} onChange={e => setForm({ ...form, stock_disponible: e.target.value })} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Fecha caducidad (opcional)</label>
+                <input type="date" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  value={form.fecha_caducidad} onChange={e => setForm({ ...form, fecha_caducidad: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setVista('dashboard')}
+                className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+              <button onClick={handleCrear} disabled={loading}
+                className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-50 transition"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                {loading ? 'Publicando...' : 'âœ… Publicar beneficio'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\EntidadDashboard.tsx =====
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
+interface Actividad {
+  id: string
+  nombre: string
+  descripcion: string
+  objetivo: string
+  municipio: string
+  fecha_inicio: string
+  fecha_fin: string
+  horarios: string
+  num_voluntarios_objetivo: number
+  estado: string
+  publicar_buscador: boolean
+}
+
+interface Props {
+  usuario: { id: string; email: string; tipo_usuario: string }
+  onLogout: () => void
+}
+
+const trimestreActual = () => {
+  const now = new Date()
+  const q = Math.floor(now.getMonth() / 3) + 1
+  return `T${q} ${now.getFullYear()}`
+}
+
+const proximoTrimestre = () => {
+  const now = new Date()
+  let q = Math.floor(now.getMonth() / 3) + 2
+  let y = now.getFullYear()
+  if (q > 4) { q = 1; y++ }
+  const starts = ['-01-01', '-04-01', '-07-01', '-10-01']
+  const ends = ['-03-31', '-06-30', '-09-30', '-12-31']
+  return { inicio: `${y}${starts[q-1]}`, fin: `${y}${ends[q-1]}`, label: `T${q} ${y}` }
+}
+
+export default function EntidadDashboard({ usuario, onLogout }: Props) {
+  const [vista, setVista] = useState<'dashboard' | 'nueva'>('dashboard')
+  const [actividades, setActividades] = useState<Actividad[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [form, setForm] = useState({
+    nombre: '', descripcion: '', objetivo: '', municipio: '',
+    fecha_inicio: '', fecha_fin: '', horarios: '',
+    num_voluntarios_objetivo: 10, publicar_buscador: true
+  })
+
+  const token = localStorage.getItem('token')
+  const headers = { Authorization: `Bearer ${token}` }
+
+  useEffect(() => { cargarActividades() }, [])
+
+  const cargarActividades = async () => {
+    try {
+      setLoading(true)
+      const res = await axios.get('/api/entidades/mis-actividades', { headers })
+      setActividades(res.data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCrear = async () => {
+    if (!form.nombre || !form.municipio || !form.fecha_inicio || !form.fecha_fin) {
+      return setError('Nombre, municipio y fechas son obligatorios')
+    }
+    try {
+      setLoading(true)
+      await axios.post('/api/entidades/actividades', form, { headers })
+      setSuccess('âœ… Actividad creada correctamente')
+      setError('')
+      setForm({ nombre: '', descripcion: '', objetivo: '', municipio: '', fecha_inicio: '', fecha_fin: '', horarios: '', num_voluntarios_objetivo: 10, publicar_buscador: true })
+      cargarActividades()
+      setVista('dashboard')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al crear actividad')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleDuplicar = (a: Actividad) => {
+    const prox = proximoTrimestre()
+    setForm({
+      nombre: `${a.nombre} â€” ${prox.label}`,
+      descripcion: a.descripcion,
+      objetivo: a.objetivo || '',
+      municipio: a.municipio,
+      fecha_inicio: prox.inicio,
+      fecha_fin: prox.fin,
+      horarios: a.horarios || '',
+      num_voluntarios_objetivo: a.num_voluntarios_objetivo,
+      publicar_buscador: a.publicar_buscador
+    })
+    setVista('nueva')
+    setSuccess('')
+    setError('')
+    window.scrollTo(0, 0)
+  }
+
+  const formatFecha = (f: string) => new Date(f).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <nav className="px-6 py-4 flex justify-between items-center shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">ðŸŒ¿</span>
+          <span className="font-bold text-lg text-white">Voluntariado Cultural</span>
+          <span style={{ fontSize: '11px', background: 'rgba(255,255,255,0.2)', color: 'white', padding: '2px 10px', borderRadius: '999px', marginLeft: '8px' }}>Entidad Social</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="text-green-100 text-sm hidden sm:block">{usuario.email}</span>
+          <button onClick={onLogout} className="text-sm font-semibold px-4 py-2 rounded-xl border border-white text-white hover:bg-white hover:text-green-800 transition">
+            Cerrar sesiÃ³n
+          </button>
+        </div>
+      </nav>
+
+      <div className="max-w-5xl mx-auto p-6">
+        <div className="rounded-3xl p-8 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-8xl opacity-20">ðŸ¢</div>
+          <h2 className="text-3xl font-bold text-white mb-1">Panel de Entidad Social</h2>
+          <p className="text-green-100">Gestiona tus actividades de voluntariado Â· <span className="font-semibold">{trimestreActual()}</span></p>
+        </div>
+
+        {success && <div className="bg-green-50 text-green-700 p-4 rounded-2xl mb-4 text-sm">{success}</div>}
+
+        <div className="flex gap-2 mb-6">
+          <button onClick={() => setVista('dashboard')}
+            className={`px-5 py-2 rounded-xl font-medium text-sm transition ${vista === 'dashboard' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            style={vista === 'dashboard' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
+            ðŸ“‹ Mis Actividades
+          </button>
+          <button onClick={() => { setVista('nueva'); setError(''); setSuccess(''); setForm({ nombre: '', descripcion: '', objetivo: '', municipio: '', fecha_inicio: '', fecha_fin: '', horarios: '', num_voluntarios_objetivo: 10, publicar_buscador: true }) }}
+            className={`px-5 py-2 rounded-xl font-medium text-sm transition ${vista === 'nueva' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            style={vista === 'nueva' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
+            âž• Nueva Actividad
+          </button>
+        </div>
+
+        {vista === 'dashboard' && (
+          loading ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+              <p className="text-4xl mb-2">â³</p><p>Cargando actividades...</p>
+            </div>
+          ) : actividades.length === 0 ? (
+            <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+              <p className="text-4xl mb-2">ðŸ“­</p>
+              <p className="font-medium">No tienes actividades creadas</p>
+              <p className="text-sm mt-1">Crea tu primera actividad para empezar a recibir voluntarios</p>
+              <button onClick={() => setVista('nueva')}
+                className="mt-4 px-6 py-2 rounded-xl text-sm font-semibold text-white"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                âž• Crear actividad
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {actividades.map(a => (
+                <div key={a.id} className="bg-white rounded-2xl p-6 border border-gray-100 hover:shadow-md transition">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="font-semibold text-gray-800">{a.nombre}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${a.estado === 'publicada' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                      {a.estado}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-500 mb-3 line-clamp-2">{a.descripcion}</p>
+                  <div className="space-y-1 text-xs text-gray-500 mb-4">
+                    <p>ðŸ“ {a.municipio}</p>
+                    <p>ðŸ“… {formatFecha(a.fecha_inicio)} â†’ {formatFecha(a.fecha_fin)}</p>
+                    <p>ðŸ‘¥ {a.num_voluntarios_objetivo} voluntarios objetivo</p>
+                  </div>
+                  <button
+                    onClick={() => handleDuplicar(a)}
+                    className="w-full py-2 rounded-xl text-xs font-semibold border-2 transition hover:bg-green-50"
+                    style={{ borderColor: '#16a34a', color: '#16a34a' }}>
+                    ðŸ“‹ Duplicar para {proximoTrimestre().label}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )
+        )}
+
+        {vista === 'nueva' && (
+          <div className="bg-white rounded-2xl p-8 border border-gray-100">
+            <h3 className="text-lg font-semibold mb-6">âž• Nueva Actividad de Voluntariado</h3>
+
+            {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Nombre de la actividad *</label>
+                <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  placeholder="Ej: Limpieza del parque municipal"
+                  value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">DescripciÃ³n</label>
+                <textarea className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500 h-24 resize-none"
+                  placeholder="Describe la actividad..."
+                  value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Objetivo</label>
+                <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  placeholder="Objetivo de la actividad"
+                  value={form.objetivo} onChange={e => setForm({ ...form, objetivo: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Municipio *</label>
+                <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  placeholder="Madrid, Barcelona..."
+                  value={form.municipio} onChange={e => setForm({ ...form, municipio: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Horarios</label>
+                <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  placeholder="Ej: SÃ¡bados 10:00-14:00"
+                  value={form.horarios} onChange={e => setForm({ ...form, horarios: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Fecha inicio *</label>
+                <input type="date" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  value={form.fecha_inicio} onChange={e => setForm({ ...form, fecha_inicio: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Fecha fin *</label>
+                <input type="date" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  value={form.fecha_fin} onChange={e => setForm({ ...form, fecha_fin: e.target.value })} />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">NÂº voluntarios objetivo</label>
+                <input type="number" min="1" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+                  value={form.num_voluntarios_objetivo} onChange={e => setForm({ ...form, num_voluntarios_objetivo: parseInt(e.target.value) })} />
+              </div>
+
+              <div className="flex items-center gap-3 pt-6">
+                <input type="checkbox" id="publicar" checked={form.publicar_buscador}
+                  onChange={e => setForm({ ...form, publicar_buscador: e.target.checked })} />
+                <label htmlFor="publicar" className="text-sm text-gray-600">Publicar en el buscador pÃºblico</label>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button onClick={() => setVista('dashboard')}
+                className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
+                Cancelar
+              </button>
+              <button onClick={handleCrear} disabled={loading}
+                className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-50 transition"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                {loading ? 'Creando...' : 'âœ… Crear actividad'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\ForgotPassword.tsx =====
+import { useState } from 'react'
+import axios from 'axios'
+
+interface ForgotPasswordProps {
+  onBack: () => void
+}
+
+export default function ForgotPassword({ onBack }: ForgotPasswordProps) {
+  const [email, setEmail] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [error, setError] = useState('')
+
+  const handleSolicitar = async () => {
+    if (!email) return setError('Introduce tu email')
+    try {
+      setLoading(true)
+      setError('')
+      await axios.post('/api/password/solicitar', { email })
+      setSuccess('Si el email existe, recibiras un enlace en breve. Revisa tu bandeja de entrada.')
+      setEmail('')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al enviar el email')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8">
+        <div className="text-center mb-6">
+          <span className="text-4xl">🔒</span>
+          <h1 className="text-2xl font-bold mt-2">Recuperar contrasena</h1>
+          <p className="text-gray-500 text-sm mt-1">Te enviaremos un enlace para restablecer tu contrasena</p>
+        </div>
+        {success && (
+          <div className="bg-green-50 text-green-700 text-sm p-4 rounded-xl mb-4">{success}</div>
+        )}
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl mb-4">{error}</div>
+        )}
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Email registrado</label>
+        <input
+          type="email"
+          className="w-full border border-gray-200 rounded-xl p-3 mb-4 text-sm focus:outline-none focus:border-green-500"
+          placeholder="tu@email.com"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSolicitar()}
+        />
+        <button
+          onClick={handleSolicitar}
+          disabled={loading}
+          className="w-full py-3 rounded-xl font-semibold text-white disabled:opacity-50 transition"
+          style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
+        >
+          {loading ? 'Enviando...' : 'Enviar enlace de recuperacion'}
+        </button>
+        <button onClick={onBack} className="w-full mt-4 text-gray-400 hover:text-gray-600 text-sm">
+          Volver al login
+        </button>
+      </div>
+    </div>
+  )
+}
+
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\Horas.tsx =====
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+
+interface Actividad {
+  id: string
+  nombre: string
+  municipio: string
+}
+
+interface RegistroHoras {
+  id: string
+  actividad_nombre: string
+  horas: number
+  fecha_registro: string
+  estado: 'pendiente' | 'validada' | 'rechazada'
+  notas: string
+}
+
+interface Resumen {
+  total_validadas: number
+  total_pendientes: number
+  total_canjeadas: number
+  disponibles: number
+}
+
+interface Props {
+  onBack: () => void
+}
+
+export default function Horas({ onBack }: Props) {
+  const [horas, setHoras] = useState<RegistroHoras[]>([])
+  const [resumen, setResumen] = useState<Resumen>({ total_validadas: 0, total_pendientes: 0, total_canjeadas: 0, disponibles: 0 })
+  const [actividades, setActividades] = useState<Actividad[]>([])
+  const [tab, setTab] = useState<'historial' | 'registrar'>('historial')
+  const [form, setForm] = useState({ actividad_id: '', horas: '', notas: '' })
+  const [enviando, setEnviando] = useState(false)
+  const [mensaje, setMensaje] = useState<{ texto: string; tipo: 'ok' | 'error' } | null>(null)
+
+  const token = localStorage.getItem('token')
+  const headers = { Authorization: `Bearer ${token}` }
+
+  useEffect(() => {
+    cargarHoras()
+    cargarActividades()
+  }, [])
+
+  const cargarHoras = async () => {
+    try {
+      const res = await axios.get('/api/horas/mis-horas', { headers })
+      setHoras(res.data.horas)
+      setResumen(res.data.resumen)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const cargarActividades = async () => {
+    try {
+      const res = await axios.get('/api/actividades')
+      setActividades(res.data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const registrarHoras = async () => {
+    if (!form.actividad_id || !form.horas) {
+      setMensaje({ texto: 'Selecciona una actividad e introduce las horas', tipo: 'error' })
+      return
+    }
+    try {
+      setEnviando(true)
+      await axios.post('/api/horas', {
+        actividad_id: form.actividad_id,
+        horas: parseFloat(form.horas),
+        notas: form.notas
+      }, { headers })
+      setMensaje({ texto: 'Horas registradas correctamente. Pendientes de validacion.', tipo: 'ok' })
+      setForm({ actividad_id: '', horas: '', notas: '' })
+      cargarHoras()
+    } catch (err: any) {
+      setMensaje({ texto: err.response?.data?.error || 'Error al registrar horas', tipo: 'error' })
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  const estadoColor: Record<string, string> = {
+    pendiente: 'bg-yellow-100 text-yellow-700',
+    validada: 'bg-green-100 text-green-700',
+    rechazada: 'bg-red-100 text-red-500',
+  }
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <nav className="px-6 py-4 flex justify-between items-center shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <h1 className="text-xl font-bold text-white">Voluntariado Cultural</h1>
+        <button onClick={onBack} className="text-sm font-semibold px-4 py-2 rounded-xl transition border border-white text-white hover:bg-white hover:text-green-800">
+          Volver al dashboard
+        </button>
+      </nav>
+
+      <div className="max-w-4xl mx-auto p-6">
+        <h2 className="text-2xl font-bold mb-2">Mis Horas</h2>
+        <p className="text-gray-500 mb-6">Registra y consulta tus horas de voluntariado</p>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-3xl font-bold text-green-600">{resumen.total_validadas}h</p>
+            <p className="text-xs text-gray-500 mt-1">Validadas</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-3xl font-bold text-yellow-500">{resumen.total_pendientes}h</p>
+            <p className="text-xs text-gray-500 mt-1">Pendientes</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-3xl font-bold text-purple-600">{resumen.total_canjeadas}h</p>
+            <p className="text-xs text-gray-500 mt-1">Canjeadas</p>
+          </div>
+          <div className="bg-white rounded-xl shadow p-4 text-center">
+            <p className="text-3xl font-bold text-blue-600">{resumen.disponibles}h</p>
+            <p className="text-xs text-gray-500 mt-1">Disponibles</p>
+          </div>
+        </div>
+
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setTab('historial')}
+            className={`px-5 py-2 rounded-lg font-medium text-sm transition ${tab === 'historial' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            Historial
+          </button>
+          <button
+            onClick={() => setTab('registrar')}
+            className={`px-5 py-2 rounded-lg font-medium text-sm transition ${tab === 'registrar' ? 'bg-blue-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+          >
+            + Registrar horas
+          </button>
+        </div>
+
+        {tab === 'historial' && horas.length === 0 && (
+          <div className="bg-white rounded-xl shadow p-12 text-center text-gray-400">
+            <p className="text-4xl mb-2">ðŸ“‹</p>
+            <p>No tienes horas registradas todavia</p>
+            <button
+              onClick={() => setTab('registrar')}
+              className="mt-3 text-sm bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+            >
+              Registrar mis primeras horas
+            </button>
+          </div>
+        )}
+
+        {tab === 'historial' && horas.length > 0 && (
+          <div className="bg-white rounded-xl shadow overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase">
+                <tr>
+                  <th className="px-6 py-3 text-left">Actividad</th>
+                  <th className="px-6 py-3 text-left">Fecha</th>
+                  <th className="px-6 py-3 text-center">Horas</th>
+                  <th className="px-6 py-3 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {horas.map(h => (
+                  <tr key={h.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 font-medium">{h.actividad_nombre}</td>
+                    <td className="px-6 py-4 text-gray-500">{new Date(h.fecha_registro).toLocaleDateString('es-ES')}</td>
+                    <td className="px-6 py-4 text-center font-bold text-blue-600">{h.horas}h</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${estadoColor[h.estado]}`}>
+                        {h.estado}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {tab === 'registrar' && (
+          <div className="bg-white rounded-xl shadow p-6">
+            <h3 className="font-semibold text-lg mb-4">Registrar horas de voluntariado</h3>
+
+            {mensaje && (
+              <div className={`p-3 rounded-lg mb-4 text-sm ${mensaje.tipo === 'ok' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-600'}`}>
+                {mensaje.texto}
+              </div>
+            )}
+
+            <label className="text-sm text-gray-600 mb-1 block">Actividad</label>
+            <select
+              className="w-full border rounded-lg p-3 mb-4"
+              value={form.actividad_id}
+              onChange={e => setForm({ ...form, actividad_id: e.target.value })}
+            >
+              <option value="">Selecciona una actividad...</option>
+              {actividades.map(a => (
+                <option key={a.id} value={a.id}>{a.nombre} - {a.municipio}</option>
+              ))}
+            </select>
+
+            <label className="text-sm text-gray-600 mb-1 block">Horas realizadas</label>
+            <input
+              type="number"
+              min="0.5"
+              max="24"
+              step="0.5"
+              className="w-full border rounded-lg p-3 mb-4"
+              placeholder="Ej: 4"
+              value={form.horas}
+              onChange={e => setForm({ ...form, horas: e.target.value })}
+            />
+
+            <label className="text-sm text-gray-600 mb-1 block">Notas (opcional)</label>
+            <textarea
+              className="w-full border rounded-lg p-3 mb-6 resize-none"
+              rows={3}
+              placeholder="Describe brevemente tu aportacion..."
+              value={form.notas}
+              onChange={e => setForm({ ...form, notas: e.target.value })}
+            />
+
+            <button
+              onClick={registrarHoras}
+              disabled={enviando}
+              className="w-full bg-blue-600 text-white rounded-lg p-3 font-semibold hover:bg-blue-700 disabled:opacity-50"
+            >
+              {enviando ? 'Registrando...' : 'Registrar horas'}
+            </button>
+            <p className="text-xs text-gray-400 text-center mt-3">Las horas quedan pendientes de validacion por el responsable</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\Perfil.tsx =====
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
+interface Props {
+  usuario: { id: string; email: string; tipo_usuario: string }
+  onBack: () => void
+}
+
+export default function Perfil({ usuario, onBack }: Props) {
+  const [form, setForm] = useState({
+    nombre: '', apellidos: '', fecha_nacimiento: '', dni_nie: '',
+    telefono: '', direccion: ''
+  })
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [success, setSuccess] = useState('')
+  const [error, setError] = useState('')
+
+  const token = localStorage.getItem('token')
+  const headers = { Authorization: `Bearer ${token}` }
+
+  useEffect(() => { cargarPerfil() }, [])
+
+  const cargarPerfil = async () => {
+    try {
+      setLoading(true)
+      const res = await axios.get('/api/voluntarios/perfil', { headers })
+      if (res.data) {
+        setForm({
+          nombre: res.data.nombre || '',
+          apellidos: res.data.apellidos || '',
+          fecha_nacimiento: res.data.fecha_nacimiento?.split('T')[0] || '',
+          dni_nie: res.data.dni_nie || '',
+          telefono: res.data.telefono || '',
+          direccion: res.data.direccion || ''
+        })
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGuardar = async () => {
+    if (!form.nombre || !form.apellidos || !form.dni_nie) {
+      return setError('Nombre, apellidos y DNI/NIE son obligatorios')
+    }
+    try {
+      setSaving(true)
+      await axios.post('/api/voluntarios/perfil', form, { headers })
+      setSuccess('âœ… Perfil actualizado correctamente')
+      setError('')
+      setTimeout(() => setSuccess(''), 3000)
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al guardar perfil')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const inputClass = "w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
+  const labelClass = "text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block"
+
+  return (
+    <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <nav className="px-6 py-4 flex justify-between items-center sticky top-0 z-10 shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+        <div className="flex items-center gap-2">
+          <span className="text-2xl">ðŸŒ¿</span>
+          <span className="font-bold text-lg text-white">Voluntariado Cultural</span>
+        </div>
+        <button onClick={onBack} className="text-sm font-semibold px-4 py-2 rounded-xl border border-white text-white hover:bg-white hover:text-green-800 transition">
+          â† Volver al dashboard
+        </button>
+      </nav>
+
+      <div className="max-w-2xl mx-auto p-6">
+        <div className="rounded-3xl p-8 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-8xl opacity-20">ðŸ‘¤</div>
+          <h2 className="text-3xl font-bold text-white mb-1">Mi Perfil</h2>
+          <p className="text-green-100">{usuario.email}</p>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
+            <p className="text-3xl mb-2">â³</p>
+            <p>Cargando perfil...</p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-2xl p-8 border border-gray-100">
+            <h3 className="font-semibold text-gray-700 mb-6">ðŸ“‹ Datos personales</h3>
+
+            {success && <div className="bg-green-50 text-green-700 text-sm p-3 rounded-xl mb-4">{success}</div>}
+            {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Nombre *</label>
+                <input className={inputClass} placeholder="Tu nombre"
+                  value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>Apellidos *</label>
+                <input className={inputClass} placeholder="Tus apellidos"
+                  value={form.apellidos} onChange={e => setForm({ ...form, apellidos: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>DNI / NIE *</label>
+                <input className={inputClass} placeholder="12345678A"
+                  value={form.dni_nie} onChange={e => setForm({ ...form, dni_nie: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>Fecha de nacimiento</label>
+                <input type="date" className={inputClass}
+                  value={form.fecha_nacimiento} onChange={e => setForm({ ...form, fecha_nacimiento: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>TelÃ©fono</label>
+                <input className={inputClass} placeholder="600000000"
+                  value={form.telefono} onChange={e => setForm({ ...form, telefono: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>DirecciÃ³n</label>
+                <input className={inputClass} placeholder="Calle, nÃºmero, ciudad"
+                  value={form.direccion} onChange={e => setForm({ ...form, direccion: e.target.value })} />
+              </div>
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-gray-100">
+              <label className={labelClass}>Email (no editable)</label>
+              <input className="w-full border border-gray-100 rounded-xl p-3 text-sm bg-gray-50 text-gray-400 cursor-not-allowed"
+                value={usuario.email} disabled />
+            </div>
+
+            <button
+              onClick={handleGuardar}
+              disabled={saving}
+              className="w-full mt-6 py-3 rounded-xl font-semibold text-white disabled:opacity-50 transition hover:opacity-90"
+              style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
+            >
+              {saving ? 'Guardando...' : 'ðŸ’¾ Guardar cambios'}
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\Register.tsx =====
+import { useState } from 'react'
+import axios from 'axios'
+
+interface Props {
+  onBack: () => void
+  onRegistered: () => void
+}
+
+export default function Register({ onBack, onRegistered }: Props) {
+  const [tipo, setTipo] = useState('voluntario')
+  const [step, setStep] = useState(1)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const [base, setBase] = useState({ email: '', password: '', confirmar_password: '' })
+  const [voluntario, setVoluntario] = useState({
+    nombre: '', apellidos: '', fecha_nacimiento: '', dni_nie: '',
+    telefono: '', direccion: '', consentimiento_rgpd: false
+  })
+  const [entidad, setEntidad] = useState({
+    nombre_legal: '', nif: '', direccion: '', web: '',
+    fecha_inscripcion: '', numero_registro: '',
+    admin_nombre: '', admin_email: '', admin_telefono: '',
+    contacto_nombre: '', contacto_email: '', contacto_telefono: ''
+  })
+  const [empresa, setEmpresa] = useState({
+    nombre_empresa: '', cif: '', direccion: '', web: '',
+    contacto_nombre: '', contacto_email: '', contacto_telefono: '',
+    tipo_oferta: '', sistema_canje: 'manual'
+  })
+
+  const handleSubmit = async () => {
+    if (base.password !== base.confirmar_password) return setError('Las contraseÃ±as no coinciden')
+    if (base.password.length < 6) return setError('La contraseÃ±a debe tener al menos 6 caracteres')
+    if (tipo === 'voluntario' && !voluntario.consentimiento_rgpd) return setError('Debes aceptar el consentimiento RGPD')
+
+    try {
+      setLoading(true)
+      const { data } = await axios.post('/api/auth/register', {
+        email: base.email, password: base.password, tipo_usuario: tipo
+      })
+
+      const token_temp = data.token
+      const userId = data.usuario.id
+
+      if (tipo === 'voluntario') {
+        await axios.post('/api/voluntarios/perfil', { ...voluntario, usuario_id: userId }, {
+          headers: { Authorization: `Bearer ${token_temp}` }
+        })
+      } else if (tipo === 'entidad') {
+        await axios.post('/api/entidades/perfil', { ...entidad, usuario_id: userId }, {
+          headers: { Authorization: `Bearer ${token_temp}` }
+        })
+      } else if (tipo === 'empresa') {
+        await axios.post('/api/empresas/perfil', { ...empresa, usuario_id: userId }, {
+          headers: { Authorization: `Bearer ${token_temp}` }
+        })
+      }
+
+      onRegistered()
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al registrarse')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const inputClass = "w-full border border-gray-200 rounded-xl p-3 mb-3 text-sm focus:outline-none focus:border-green-500"
+  const labelClass = "text-xs font-medium text-gray-500 mb-1 block uppercase tracking-wide"
+  const sectionClass = "text-xs font-bold text-green-700 uppercase tracking-wider mb-3 mt-4 pb-1 border-b border-green-100"
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-lg p-8 max-h-screen overflow-y-auto">
+
+        <div className="text-center mb-6">
+          <span className="text-4xl">ðŸŒ¿</span>
+          <h1 className="text-2xl font-bold mt-2">Crear cuenta</h1>
+          <p className="text-gray-500 text-sm">Plataforma Voluntariado Cultural</p>
+        </div>
+
+        {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>}
+
+        {step === 1 && (
+          <>
+            <label className={labelClass}>Tipo de usuario</label>
+            <select value={tipo} onChange={e => setTipo(e.target.value)} className={inputClass}>
+              <option value="voluntario">ðŸ™‹ Voluntario</option>
+              <option value="entidad">ðŸ¢ Entidad Social (ONG/FundaciÃ³n)</option>
+              <option value="empresa">ðŸŽ­ Empresa Cultural</option>
+            </select>
+
+            <label className={labelClass}>Email</label>
+            <input type="email" className={inputClass} placeholder="tu@email.com"
+              value={base.email} onChange={e => setBase({ ...base, email: e.target.value })} />
+
+            <label className={labelClass}>ContraseÃ±a</label>
+            <input type="password" className={inputClass} placeholder="MÃ­nimo 6 caracteres"
+              value={base.password} onChange={e => setBase({ ...base, password: e.target.value })} />
+
+            <label className={labelClass}>Confirmar contraseÃ±a</label>
+            <input type="password" className={inputClass} placeholder="Repite la contraseÃ±a"
+              value={base.confirmar_password} onChange={e => setBase({ ...base, confirmar_password: e.target.value })} />
+
+            <button onClick={() => {
+              if (!base.email || !base.password || !base.confirmar_password) return setError('Completa todos los campos')
+              if (base.password !== base.confirmar_password) return setError('Las contraseÃ±as no coinciden')
+              if (base.password.length < 6) return setError('MÃ­nimo 6 caracteres')
+              setError(''); setStep(2)
+            }} className="w-full py-3 rounded-xl font-semibold text-white mt-2" style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+              Siguiente â†’
+            </button>
+          </>
+        )}
+
+        {/* â”€â”€ VOLUNTARIO â”€â”€ */}
+        {step === 2 && tipo === 'voluntario' && (
+          <>
+            <h2 className="font-semibold text-gray-700 mb-4">ðŸ“‹ Datos del voluntario</h2>
+
+            <label className={labelClass}>Nombre</label>
+            <input className={inputClass} placeholder="Tu nombre" value={voluntario.nombre}
+              onChange={e => setVoluntario({ ...voluntario, nombre: e.target.value })} />
+
+            <label className={labelClass}>Apellidos</label>
+            <input className={inputClass} placeholder="Tus apellidos" value={voluntario.apellidos}
+              onChange={e => setVoluntario({ ...voluntario, apellidos: e.target.value })} />
+
+            <label className={labelClass}>DNI / NIE</label>
+            <input className={inputClass} placeholder="12345678A" value={voluntario.dni_nie}
+              onChange={e => setVoluntario({ ...voluntario, dni_nie: e.target.value })} />
+
+            <label className={labelClass}>Fecha de nacimiento</label>
+            <input type="date" className={inputClass} value={voluntario.fecha_nacimiento}
+              onChange={e => setVoluntario({ ...voluntario, fecha_nacimiento: e.target.value })} />
+
+            <label className={labelClass}>TelÃ©fono</label>
+            <input className={inputClass} placeholder="600000000" value={voluntario.telefono}
+              onChange={e => setVoluntario({ ...voluntario, telefono: e.target.value })} />
+
+            <label className={labelClass}>DirecciÃ³n</label>
+            <input className={inputClass} placeholder="Calle, nÃºmero, ciudad" value={voluntario.direccion}
+              onChange={e => setVoluntario({ ...voluntario, direccion: e.target.value })} />
+
+            <div className="flex items-start gap-3 mb-4 mt-2">
+              <input type="checkbox" id="rgpd" className="mt-1"
+                checked={voluntario.consentimiento_rgpd}
+                onChange={e => setVoluntario({ ...voluntario, consentimiento_rgpd: e.target.checked })} />
+              <label htmlFor="rgpd" className="text-xs text-gray-500">
+                Acepto el tratamiento de mis datos personales conforme al <span className="text-green-600 underline cursor-pointer">Reglamento RGPD</span>
+              </label>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50">â† AtrÃ¡s</button>
+              <button onClick={handleSubmit} disabled={loading}
+                className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                {loading ? 'Creando...' : 'âœ… Crear cuenta'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* â”€â”€ ENTIDAD â”€â”€ */}
+        {step === 2 && tipo === 'entidad' && (
+          <>
+            <h2 className="font-semibold text-gray-700 mb-4">ðŸ¢ Datos de la entidad</h2>
+
+            <p className={sectionClass}>Datos de la organizaciÃ³n</p>
+
+            <label className={labelClass}>Nombre legal *</label>
+            <input className={inputClass} placeholder="FundaciÃ³n / ONG / AsociaciÃ³n" value={entidad.nombre_legal}
+              onChange={e => setEntidad({ ...entidad, nombre_legal: e.target.value })} />
+
+            <label className={labelClass}>NIF *</label>
+            <input className={inputClass} placeholder="G12345678" value={entidad.nif}
+              onChange={e => setEntidad({ ...entidad, nif: e.target.value })} />
+
+            <label className={labelClass}>DirecciÃ³n *</label>
+            <input className={inputClass} placeholder="DirecciÃ³n completa" value={entidad.direccion}
+              onChange={e => setEntidad({ ...entidad, direccion: e.target.value })} />
+
+            <label className={labelClass}>PÃ¡gina web (opcional)</label>
+            <input className={inputClass} placeholder="https://..." value={entidad.web}
+              onChange={e => setEntidad({ ...entidad, web: e.target.value })} />
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelClass}>Fecha de inscripciÃ³n oficial</label>
+                <input type="date" className={inputClass} value={entidad.fecha_inscripcion}
+                  onChange={e => setEntidad({ ...entidad, fecha_inscripcion: e.target.value })} />
+              </div>
+              <div>
+                <label className={labelClass}>NÃºmero de registro</label>
+                <input className={inputClass} placeholder="NÂº registro" value={entidad.numero_registro}
+                  onChange={e => setEntidad({ ...entidad, numero_registro: e.target.value })} />
+              </div>
+            </div>
+
+            <p className={sectionClass}>Persona administradora *</p>
+
+            <label className={labelClass}>Nombre completo *</label>
+            <input className={inputClass} placeholder="Nombre completo" value={entidad.admin_nombre}
+              onChange={e => setEntidad({ ...entidad, admin_nombre: e.target.value })} />
+
+            <label className={labelClass}>Email *</label>
+            <input type="email" className={inputClass} placeholder="admin@entidad.org" value={entidad.admin_email}
+              onChange={e => setEntidad({ ...entidad, admin_email: e.target.value })} />
+
+            <label className={labelClass}>TelÃ©fono *</label>
+            <input className={inputClass} placeholder="600000000" value={entidad.admin_telefono}
+              onChange={e => setEntidad({ ...entidad, admin_telefono: e.target.value })} />
+
+            <p className={sectionClass}>Persona de contacto (opcional, si es distinta)</p>
+
+            <label className={labelClass}>Nombre completo</label>
+            <input className={inputClass} placeholder="Nombre completo" value={entidad.contacto_nombre}
+              onChange={e => setEntidad({ ...entidad, contacto_nombre: e.target.value })} />
+
+            <label className={labelClass}>Email</label>
+            <input type="email" className={inputClass} placeholder="contacto@entidad.org" value={entidad.contacto_email}
+              onChange={e => setEntidad({ ...entidad, contacto_email: e.target.value })} />
+
+            <label className={labelClass}>TelÃ©fono</label>
+            <input className={inputClass} placeholder="600000000" value={entidad.contacto_telefono}
+              onChange={e => setEntidad({ ...entidad, contacto_telefono: e.target.value })} />
+
+            <div className="flex gap-3 mt-2">
+              <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50">â† AtrÃ¡s</button>
+              <button onClick={handleSubmit} disabled={loading}
+                className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                {loading ? 'Creando...' : 'âœ… Crear cuenta'}
+              </button>
+            </div>
+          </>
+        )}
+
+        {/* â”€â”€ EMPRESA â”€â”€ */}
+        {step === 2 && tipo === 'empresa' && (
+          <>
+            <h2 className="font-semibold text-gray-700 mb-4">ðŸŽ­ Datos de la empresa cultural</h2>
+
+            <p className={sectionClass}>Datos de la empresa</p>
+
+            <label className={labelClass}>Nombre de la empresa *</label>
+            <input className={inputClass} placeholder="Nombre comercial" value={empresa.nombre_empresa}
+              onChange={e => setEmpresa({ ...empresa, nombre_empresa: e.target.value })} />
+
+            <label className={labelClass}>CIF *</label>
+            <input className={inputClass} placeholder="B12345678" value={empresa.cif}
+              onChange={e => setEmpresa({ ...empresa, cif: e.target.value })} />
+
+            <label className={labelClass}>DirecciÃ³n *</label>
+            <input className={inputClass} placeholder="DirecciÃ³n completa" value={empresa.direccion}
+              onChange={e => setEmpresa({ ...empresa, direccion: e.target.value })} />
+
+            <label className={labelClass}>PÃ¡gina web (opcional)</label>
+            <input className={inputClass} placeholder="https://..." value={empresa.web}
+              onChange={e => setEmpresa({ ...empresa, web: e.target.value })} />
+
+            <label className={labelClass}>Tipo de oferta cultural *</label>
+            <select className={inputClass} value={empresa.tipo_oferta}
+              onChange={e => setEmpresa({ ...empresa, tipo_oferta: e.target.value })}>
+              <option value="">Selecciona...</option>
+              <option value="museo">Museo</option>
+              <option value="teatro">Teatro</option>
+              <option value="musica">MÃºsica / Conciertos</option>
+              <option value="cine">Cine</option>
+              <option value="danza">Danza</option>
+              <option value="talleres">Talleres culturales</option>
+              <option value="otros">Otros</option>
+            </select>
+
+            <label className={labelClass}>Sistema de canje disponible *</label>
+            <select className={inputClass} value={empresa.sistema_canje}
+              onChange={e => setEmpresa({ ...empresa, sistema_canje: e.target.value })}>
+              <option value="manual">OpciÃ³n A â€” Canje manual (cÃ³digo en TPV/web)</option>
+              <option value="api">OpciÃ³n B â€” API REST (validaciÃ³n automÃ¡tica)</option>
+              <option value="plugin">OpciÃ³n C â€” Plugin (Shopify, WooCommerce...)</option>
+              <option value="middleware">OpciÃ³n D â€” Middleware (sincronizaciÃ³n automÃ¡tica)</option>
+            </select>
+
+            <p className={sectionClass}>Persona de contacto *</p>
+
+            <label className={labelClass}>Nombre completo *</label>
+            <input className={inputClass} placeholder="Nombre completo" value={empresa.contacto_nombre}
+              onChange={e => setEmpresa({ ...empresa, contacto_nombre: e.target.value })} />
+
+            <label className={labelClass}>Email *</label>
+            <input type="email" className={inputClass} placeholder="contacto@empresa.com" value={empresa.contacto_email}
+              onChange={e => setEmpresa({ ...empresa, contacto_email: e.target.value })} />
+
+            <label className={labelClass}>TelÃ©fono *</label>
+            <input className={inputClass} placeholder="600000000" value={empresa.contacto_telefono}
+              onChange={e => setEmpresa({ ...empresa, contacto_telefono: e.target.value })} />
+
+            <div className="flex gap-3 mt-2">
+              <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50">â† AtrÃ¡s</button>
+              <button onClick={handleSubmit} disabled={loading}
+                className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-50"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
+                {loading ? 'Creando...' : 'âœ… Crear cuenta'}
+              </button>
+            </div>
+          </>
+        )}
+
+        <button onClick={onBack} className="w-full mt-4 text-gray-400 hover:text-gray-600 text-sm">
+          â† Volver al login
+        </button>
+      </div>
+    </div>
+  )
+}
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\pages\ResetPassword.tsx =====
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+
+interface ResetPasswordProps {
+  onSuccess: () => void
+}
+
+export default function ResetPassword({ onSuccess }: ResetPasswordProps) {
+  const [token, setToken] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmar, setConfirmar] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const t = params.get('token')
+    if (t) setToken(t)
+    else setError('Token no valido. Solicita un nuevo enlace de recuperacion.')
+  }, [])
+
+  const handleReset = async () => {
+    if (!password || !confirmar) return setError('Completa todos los campos')
+    if (password !== confirmar) return setError('Las contrasenas no coinciden')
+    if (password.length < 6) return setError('Minimo 6 caracteres')
+    try {
+      setLoading(true)
+      setError('')
+      await axios.post('/api/password/reset', { token, password })
+      alert('Contrasena actualizada correctamente. Ya puedes iniciar sesion.')
+      onSuccess()
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al restablecer contrasena')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-md p-8">
+        <div className="text-center mb-6">
+          <span className="text-4xl">🔑</span>
+          <h1 className="text-2xl font-bold mt-2">Nueva contrasena</h1>
+          <p className="text-gray-500 text-sm mt-1">Introduce tu nueva contrasena</p>
+        </div>
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm p-4 rounded-xl mb-4">{error}</div>
+        )}
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Nueva contrasena</label>
+        <input
+          type="password"
+          className="w-full border border-gray-200 rounded-xl p-3 mb-3 text-sm focus:outline-none focus:border-green-500"
+          placeholder="Minimo 6 caracteres"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Confirmar contrasena</label>
+        <input
+          type="password"
+          className="w-full border border-gray-200 rounded-xl p-3 mb-4 text-sm focus:outline-none focus:border-green-500"
+          placeholder="Repite la contrasena"
+          value={confirmar}
+          onChange={e => setConfirmar(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleReset()}
+        />
+        <button
+          onClick={handleReset}
+          disabled={loading || !token}
+          className="w-full py-3 rounded-xl font-semibold text-white disabled:opacity-50 transition"
+          style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
+        >
+          {loading ? 'Guardando...' : 'Restablecer contrasena'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\App.css =====
+.counter {
+  font-size: 16px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: var(--accent);
+  background: var(--accent-bg);
+  border: 2px solid transparent;
+  transition: border-color 0.3s;
+  margin-bottom: 24px;
+
+  &:hover {
+    border-color: var(--accent-border);
+  }
+  &:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+.hero {
+  position: relative;
+
+  .base,
+  .framework,
+  .vite {
+    inset-inline: 0;
+    margin: 0 auto;
+  }
+
+  .base {
+    width: 170px;
+    position: relative;
+    z-index: 0;
+  }
+
+  .framework,
+  .vite {
+    position: absolute;
+  }
+
+  .framework {
+    z-index: 1;
+    top: 34px;
+    height: 28px;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(44deg) rotateY(39deg)
+      scale(1.4);
+  }
+
+  .vite {
+    z-index: 0;
+    top: 107px;
+    height: 26px;
+    width: auto;
+    transform: perspective(2000px) rotateZ(300deg) rotateX(40deg) rotateY(39deg)
+      scale(0.8);
+  }
+}
+
+#center {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  place-content: center;
+  place-items: center;
+  flex-grow: 1;
+
+  @media (max-width: 1024px) {
+    padding: 32px 20px 24px;
+    gap: 18px;
+  }
+}
+
+#next-steps {
+  display: flex;
+  border-top: 1px solid var(--border);
+  text-align: left;
+
+  & > div {
+    flex: 1 1 0;
+    padding: 32px;
+    @media (max-width: 1024px) {
+      padding: 24px 20px;
+    }
+  }
+
+  .icon {
+    margin-bottom: 16px;
+    width: 22px;
+    height: 22px;
+  }
+
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+#docs {
+  border-right: 1px solid var(--border);
+
+  @media (max-width: 1024px) {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+#next-steps ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+  margin: 32px 0 0;
+
+  .logo {
+    height: 18px;
+  }
+
+  a {
+    color: var(--text-h);
+    font-size: 16px;
+    border-radius: 6px;
+    background: var(--social-bg);
+    display: flex;
+    padding: 6px 12px;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: box-shadow 0.3s;
+
+    &:hover {
+      box-shadow: var(--shadow);
+    }
+    .button-icon {
+      height: 18px;
+      width: 18px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    margin-top: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    li {
+      flex: 1 1 calc(50% - 8px);
+    }
+
+    a {
+      width: 100%;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+  }
+}
+
+#spacer {
+  height: 88px;
+  border-top: 1px solid var(--border);
+  @media (max-width: 1024px) {
+    height: 48px;
+  }
+}
+
+.ticks {
+  position: relative;
+  width: 100%;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: -4.5px;
+    border: 5px solid transparent;
+  }
+
+  &::before {
+    left: 0;
+    border-left-color: var(--border);
+  }
+  &::after {
+    right: 0;
+    border-right-color: var(--border);
+  }
+}
+
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\App.tsx =====
+import { useState } from 'react'
+import axios from 'axios'
+import Dashboard from './pages/Dashboard'
+import Register from './pages/Register'
+import Admin from './pages/Admin'
+
+function App() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [usuario, setUsuario] = useState<any>(null)
+  const [showRegister, setShowRegister] = useState(false)
+  const [registered, setRegistered] = useState(false)
+  const [showLogin, setShowLogin] = useState(false)
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  const handleLogin = async () => {
+    try {
+      const res = await axios.post('/api/auth/login', { email, password })
+      localStorage.setItem('token', res.data.token)
+      setUsuario(res.data.usuario)
+      setError('')
+      setShowLogin(false)
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al iniciar sesiÃ³n')
+    }
+  }
+
+  if (usuario && usuario.tipo_usuario === 'admin') {
+    return <Admin onLogout={() => { setUsuario(null); localStorage.removeItem('token') }} />
+  }
+  if (usuario) return <Dashboard usuario={usuario} onLogout={() => { setUsuario(null); localStorage.removeItem('token') }} />
+  if (showRegister) return (
+    <Register
+      onBack={() => setShowRegister(false)}
+      onRegistered={() => { setShowRegister(false); setRegistered(true); setShowLogin(true) }}
+    />
+  )
+
+  const slides = [
+    {
+      titulo: 'Tu tiempo vale cultura',
+      subtitulo: 'Convierte tus horas de voluntariado en experiencias culturales Ãºnicas',
+      imagen: 'ðŸŽ­',
+      color: 'from-green-50 to-emerald-100'
+    },
+    {
+      titulo: 'MÃ¡s de 200 empresas culturales',
+      subtitulo: 'Teatros, museos, festivales y escuelas de arte colaborando contigo',
+      imagen: 'ðŸŽª',
+      color: 'from-blue-50 to-cyan-100'
+    },
+    {
+      titulo: '2.400+ voluntarios activos',
+      subtitulo: 'Ãšnete a la comunidad que transforma horas en cultura',
+      imagen: 'ðŸŒ±',
+      color: 'from-purple-50 to-pink-100'
+    }
+  ]
+
+  const noticias = [
+    {
+      emoji: 'ðŸŽ­',
+      categoria: 'Eventos',
+      titulo: 'Nueva temporada de Ã³pera en el Teatro Real',
+      texto: 'Los voluntarios registrados pueden acceder con descuentos de hasta el 50% presentando su cÃ³digo de canje generado en la plataforma.',
+      fecha: '10 abril 2026'
+    },
+    {
+      emoji: 'ðŸŽª',
+      categoria: 'Beneficios',
+      titulo: 'MÃ¡s de 200 empresas culturales ya participan',
+      texto: 'Teatros, museos, festivales y escuelas de arte se suman a la plataforma para ofrecer experiencias Ãºnicas a los voluntarios registrados.',
+      fecha: '8 abril 2026'
+    },
+    {
+      emoji: 'ðŸŒ',
+      categoria: 'Comunidad',
+      titulo: 'CÃ³mo funciona el sistema de horas y canjes',
+      texto: 'Cada hora validada por tu entidad suma a tu saldo. Con ese saldo puedes generar cÃ³digos de canje para disfrutar de la cultura que te mereces.',
+      fecha: '5 abril 2026'
+    }
+  ]
+
+  const stats = [
+    { numero: '2.400+', label: 'Voluntarios activos' },
+    { numero: '180+', label: 'Entidades sociales' },
+    { numero: '200+', label: 'Empresas culturales' },
+    { numero: '12.000+', label: 'Horas registradas' }
+  ]
+
+  return (
+    <div className="min-h-screen" style={{ background: '#fafafa' }}>
+      {showLogin && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowLogin(false)}>
+          <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md" onClick={e => e.stopPropagation()}>
+            <div className="text-center mb-6">
+              <div className="text-5xl mb-3">ðŸŒ¿</div>
+              <h2 className="text-2xl font-bold" style={{ color: '#14532d' }}>Iniciar sesiÃ³n</h2>
+              <p className="text-gray-500 text-sm mt-1">Accede a tu cuenta</p>
+            </div>
+
+            {registered && (
+              <div className="bg-green-50 border border-green-200 text-green-700 text-sm p-3 rounded-xl mb-4">
+                âœ… Cuenta creada. Ya puedes iniciar sesiÃ³n.
+              </div>
+            )}
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 text-sm p-3 rounded-xl mb-4">
+                âŒ {error}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-600 mb-1 block">Email</label>
+                <input
+                  className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                  style={{ '--tw-ring-color': '#16a34a' } as any}
+                  placeholder="tu@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-600 mb-1 block">ContraseÃ±a</label>
+                <input
+                  className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:border-transparent"
+                  type="password"
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleLogin}
+              className="w-full mt-6 py-3 rounded-xl text-white font-semibold text-sm transition hover:opacity-90 active:scale-95"
+              style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
+            >
+              Iniciar sesiÃ³n
+            </button>
+
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => { setShowLogin(false); setShowRegister(true) }}
+                className="text-sm font-medium hover:underline"
+                style={{ color: '#16a34a' }}
+              >
+                Â¿No tienes cuenta? RegÃ­strate gratis
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="min-h-screen">
+        {/* HEADER */}
+        <header className="sticky top-0 z-50 bg-white shadow-sm border-b border-gray-100">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">ðŸŒ¿</span>
+              <a href="#" className="font-bold text-lg" style={{ color: '#14532d' }}>Voluntariado Cultural</a>
+            </div>
+            <nav className="hidden md:flex items-center gap-8">
+              <a href="#actividades" className="text-sm text-gray-600 hover:text-green-700 font-medium transition">Actividades</a>
+              <a href="#como-funciona" className="text-sm text-gray-600 hover:text-green-700 font-medium transition">CÃ³mo funciona</a>
+              <a href="#beneficios" className="text-sm text-gray-600 hover:text-green-700 font-medium transition">Beneficios</a>
+              <a href="#noticias" className="text-sm text-gray-600 hover:text-green-700 font-medium transition">Noticias</a>
+              <a href="#contacto" className="text-sm text-gray-600 hover:text-green-700 font-medium transition">Contacto</a>
+            </nav>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowLogin(!showLogin)}
+                className="text-sm font-semibold px-4 py-2 rounded-xl transition border-2"
+                style={{ borderColor: '#16a34a', color: '#16a34a' }}
+              >
+                Iniciar sesiÃ³n
+              </button>
+              <button
+                onClick={() => setShowRegister(true)}
+                className="text-sm font-semibold px-4 py-2 rounded-xl text-white transition hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
+              >
+                RegÃ­strarse
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* HERO CON CAROUSEL */}
+        <section className="relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' }}>
+          <div className="max-w-6xl mx-auto px-6 py-20 relative">
+            <div className="flex flex-col md:flex-row items-center gap-12">
+              <div className="flex-1 text-center md:text-left">
+                <h1 className="text-5xl font-bold mb-4 leading-tight" style={{ color: '#14532d' }}>
+                  {slides[currentSlide].titulo}
+                </h1>
+                <p className="text-xl text-gray-600 mb-8">{slides[currentSlide].subtitulo}</p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
+                  <button
+                    onClick={() => setShowRegister(true)}
+                    className="px-8 py-4 rounded-xl text-white font-semibold text-lg transition hover:opacity-90 shadow-lg"
+                    style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
+                  >
+                    Empezar ahora
+                  </button>
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="px-8 py-4 rounded-xl font-semibold text-lg transition border-2 bg-white hover:bg-gray-50"
+                    style={{ borderColor: '#16a34a', color: '#16a34a' }}
+                  >
+                    Iniciar sesiÃ³n
+                  </button>
+                </div>
+                <div className="flex gap-2 mt-8 justify-center md:justify-start">
+                  {slides.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCurrentSlide(i)}
+                      className="w-2 h-2 rounded-full transition"
+                      style={{ background: i === currentSlide ? '#16a34a' : '#d1d5db' }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="flex-1 flex justify-center">
+                <div className="text-9xl animate-pulse">{slides[currentSlide].imagen}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ESTADÃSTICAS */}
+        <section className="py-12 bg-white border-y border-gray-100">
+          <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((s, i) => (
+              <div key={i} className="text-center">
+                <p className="text-3xl font-bold" style={{ color: '#16a34a' }}>{s.numero}</p>
+                <p className="text-sm text-gray-500">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* CÃ“MO FUNCIONA */}
+        <section id="como-funciona" className="py-20">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-3" style={{ color: '#14532d' }}>Â¿CÃ³mo funciona?</h2>
+              <p className="text-gray-500">En 3 pasos, tu tiempo se convierte en cultura</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { paso: '01', emoji: 'ðŸ“', titulo: 'RegÃ­strate como voluntario', texto: 'Crea tu cuenta en minutos y accede a todas las actividades de voluntariado disponibles en tu municipio.' },
+                { paso: '02', emoji: 'â±ï¸', titulo: 'Acumula horas validadas', texto: 'Participa en actividades, registra tus horas y espera la validaciÃ³n del responsable de la entidad.' },
+                { paso: '03', emoji: 'ðŸŽŸï¸', titulo: 'Canjea por cultura', texto: 'Usa tus horas para generar cÃ³digos de canje en teatros, museos, festivales y mucho mÃ¡s.' }
+              ].map(item => (
+                <div key={item.paso} className="bg-white rounded-2xl p-8 border border-gray-100 hover:shadow-md transition text-center">
+                  <div className="text-5xl mb-4">{item.emoji}</div>
+                  <p className="text-xs font-bold mb-2" style={{ color: '#16a34a' }}>PASO {item.paso}</p>
+                  <h3 className="text-lg font-semibold mb-3" style={{ color: '#14532d' }}>{item.titulo}</h3>
+                  <p className="text-gray-600 text-sm">{item.texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* BENEFICIOS */}
+        <section id="beneficios" className="py-20" style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' }}>
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-3" style={{ color: '#14532d' }}>Beneficios culturales</h2>
+              <p className="text-gray-500">Experiencias que puedes conseguir con tus horas</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { emoji: 'ðŸŽ­', titulo: 'Teatro y Ã³pera', texto: 'Entradas para las mejores obras' },
+                { emoji: 'ðŸŽµ', titulo: 'Conciertos', texto: 'MÃºsica en vivo de todos los estilos' },
+                { emoji: 'ðŸ›ï¸', titulo: 'Museos', texto: 'Visitas guiadas y exposiciones' },
+                { emoji: 'ðŸŽ¬', titulo: 'Cine y festivales', texto: 'Pases y acreditaciones especiales' }
+              ].map((b, i) => (
+                <div key={i} className="bg-white rounded-2xl p-6 text-center border border-gray-100 hover:shadow-md transition">
+                  <div className="text-5xl mb-3">{b.emoji}</div>
+                  <h3 className="font-semibold mb-2" style={{ color: '#14532d' }}>{b.titulo}</h3>
+                  <p className="text-sm text-gray-500">{b.texto}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* NOTICIAS */}
+        <section id="noticias" className="py-20 bg-white">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-3" style={{ color: '#14532d' }}>Ãšltimas noticias</h2>
+              <p className="text-gray-500">Lo mÃ¡s reciente de la plataforma</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {noticias.map((n, i) => (
+                <div key={i} className="bg-white border border-gray-100 rounded-2xl p-6 hover:shadow-md transition">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-3xl">{n.emoji}</span>
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full" style={{ background: '#dcfce7', color: '#15803d' }}>
+                      {n.categoria}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2" style={{ color: '#14532d' }}>{n.titulo}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{n.texto}</p>
+                  <p className="text-xs text-gray-400">{n.fecha}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA FINAL */}
+        <section className="py-20" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
+          <div className="max-w-4xl mx-auto px-6 text-center">
+            <h2 className="text-4xl font-bold text-white mb-4">Â¿Listo para empezar?</h2>
+            <p className="text-green-100 text-lg mb-8">Ãšnete a miles de voluntarios que ya disfrutan de la cultura</p>
+            <button
+              onClick={() => setShowRegister(true)}
+              className="px-8 py-4 bg-white rounded-xl font-semibold text-lg transition hover:bg-gray-100 shadow-xl"
+              style={{ color: '#16a34a' }}
+            >
+              Crear mi cuenta gratis
+            </button>
+          </div>
+        </section>
+
+        {/* FOOTER */}
+        <footer id="contacto" className="bg-white border-t border-gray-100 py-12">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+              <div>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-2xl">ðŸŒ¿</span>
+                  <span className="font-bold text-lg" style={{ color: '#14532d' }}>Voluntariado Cultural</span>
+                </div>
+                <p className="text-sm text-gray-500">Tu tiempo vale cultura. Plataforma de beneficios culturales para voluntariado.</p>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-3" style={{ color: '#14532d' }}>Enlaces</h4>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li><a href="#actividades" className="hover:text-green-700">Actividades</a></li>
+                  <li><a href="#como-funciona" className="hover:text-green-700">CÃ³mo funciona</a></li>
+                  <li><a href="#beneficios" className="hover:text-green-700">Beneficios</a></li>
+                  <li><a href="#noticias" className="hover:text-green-700">Noticias</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-3" style={{ color: '#14532d' }}>Contacto</h4>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>ðŸ“§ info@voluntariadocultural.es</li>
+                  <li>ðŸ“ž 900 123 456</li>
+                  <li>ðŸ“ Madrid, EspaÃ±a</li>
+                </ul>
+              </div>
+            </div>
+            <div className="pt-8 border-t border-gray-100 text-center text-sm text-gray-400">
+              <p>Â© 2026 Voluntariado Cultural. Todos los derechos reservados.</p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </div>
+  )
+}
+
+export default App
+
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\index.css =====
+@import "tailwindcss";
+
+===== C:\Users\opera\Downloads\PONER DONDE ESTABA AQUI DESCARGAS\frontend\src\main.tsx =====
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+)
+
