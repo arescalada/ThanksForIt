@@ -587,7 +587,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
 
   const cargarVoluntarios = async (silencioso = false) => {
     try {
-      setVoluntariosCargando(true)
+      if (!silencioso) setVoluntariosCargando(true)
       const endpoint = tabVoluntarios === 'solicitudes'
         ? '/api/entidades/solicitudes-voluntarios'
         : '/api/entidades/todos-voluntarios'
@@ -2229,3 +2229,5 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
     </div>
   )
 }
+
+
