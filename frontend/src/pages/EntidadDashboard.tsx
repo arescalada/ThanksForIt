@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { getAuthHeaders } from '../utils/auth'
 import Mensajes from './Mensajes'
@@ -144,6 +144,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   const [voluntarios, setVoluntarios] = useState<Voluntario[]>([])
   const [voluntariosCargando, setVoluntariosCargando] = useState(false)
   const [tabVoluntarios, setTabVoluntarios] = useState<'solicitudes' | 'todos'>('solicitudes')
+  const tabVoluntariosRef = useRef(tabVoluntarios)
   const [busquedaVoluntario, setBusquedaVoluntario] = useState('')
   const [ordenVoluntarios, setOrdenVoluntarios] = useState<'nombre' | 'apellido' | 'email'>('nombre')
 
@@ -587,7 +588,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
 
   const cargarVoluntarios = async (silencioso = false) => {
     try {
-      const endpoint = tabVoluntarios === 'solicitudes'
+      const endpoint = tabVoluntariosRef.current === 'solicitudes'
         ? '/api/entidades/solicitudes-voluntarios'
         : '/api/entidades/todos-voluntarios'
       const res = await axios.get(endpoint, { headers: getAuthHeaders() })
@@ -1371,11 +1372,11 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
         {vista === 'voluntarios' && (
           <div>
             <div className="flex gap-2 mb-5">
-              <button onClick={() => setTabVoluntarios('solicitudes')}
+              <button onClick={() => { tabVoluntariosRef.current = 'solicitudes'; setTabVoluntarios('solicitudes') }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tabVoluntarios === 'solicitudes' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                 📬 Solicitudes pendientes
               </button>
-              <button onClick={() => setTabVoluntarios('todos')}
+              <button onClick={() => { tabVoluntariosRef.current = 'todos'; setTabVoluntarios('todos') }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tabVoluntarios === 'todos' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
                 👥 Todos los voluntarios
               </button>
