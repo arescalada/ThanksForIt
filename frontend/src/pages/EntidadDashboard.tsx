@@ -595,9 +595,9 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
       setVoluntarios(res.data)
     } catch (err) {
       console.error(err)
-      setVoluntarios([])
+      if (!silencioso) setVoluntarios([])
     } finally {
-      setVoluntariosCargando(false)
+      if (!silencioso) setVoluntariosCargando(false)
     }
   }
 
