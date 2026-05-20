@@ -227,7 +227,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   }, [])
 
   useEffect(() => {
-    if (vista === 'voluntarios') cargarVoluntarios()
+    if (vista === 'voluntarios') cargarVoluntarios(true)
   }, [vista, tabVoluntarios])
 
   useEffect(() => {
@@ -587,7 +587,6 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
 
   const cargarVoluntarios = async (silencioso = false) => {
     try {
-      if (!silencioso) setVoluntariosCargando(true)
       const endpoint = tabVoluntarios === 'solicitudes'
         ? '/api/entidades/solicitudes-voluntarios'
         : '/api/entidades/todos-voluntarios'
@@ -595,9 +594,8 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
       setVoluntarios(res.data)
     } catch (err) {
       console.error(err)
-      if (!silencioso) setVoluntarios([])
     } finally {
-      if (!silencioso) setVoluntariosCargando(false)
+      setVoluntariosCargando(false)
     }
   }
 
