@@ -97,6 +97,7 @@ const server = app.listen(PORT, async () => {
   try {
     await pool.query('SELECT NOW()');
     console.log('✅ Conexión a PostgreSQL establecida');
+    await initDB();
   } catch (error) {
     console.error('❌ Error al conectar con PostgreSQL:', error);
   }
@@ -122,6 +123,8 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+
 
 
 
