@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+Ôªøimport { useState, useEffect } from 'react'
 import axios from 'axios'
 import { getAuthHeaders } from '../utils/auth'
 import Mensajes from './Mensajes'
@@ -192,7 +192,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   const [enviandoMensajeDelegado, setEnviandoMensajeDelegado] = useState(false)
   const [mensajeDelegadoOk, setMensajeDelegadoOk] = useState('')
 
-  // Horas pendientes (aprobadas por delegado, esperan validaci+¶n entidad)
+  // Horas pendientes (aprobadas por delegado, esperan validaci‚îú‚îÇn entidad)
   interface HoraPendienteEntidad {
     id: string; horas: number; fecha_registro: string; notas: string; estado: string;
     actividad_nombre: string; voluntario_nombre: string; voluntario_apellidos: string; voluntario_email: string;
@@ -289,7 +289,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
     try {
       await axios.put(`/api/horas/${id}/${accion}`, {}, { headers: getAuthHeaders() })
       setHorasEntidadMensaje({
-        texto: accion === 'validar-entidad' ? '‘£‡ Horas validadas. El voluntario las ver+Ì en su saldo.' : '‘ÿÓ Horas rechazadas.',
+        texto: accion === 'validar-entidad' ? '√î¬£√† Horas validadas. El voluntario las ver‚îú√≠ en su saldo.' : '√î√ò√Æ Horas rechazadas.',
         tipo: 'ok'
       })
       cargarHorasPendientesEntidad(true)
@@ -303,13 +303,13 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   const crearDelegado = async () => {
     setDelegadoError('')
     if (!formDelegado.nombre || !formDelegado.email || !formDelegado.password) {
-      setDelegadoError('Nombre, email y contrase+¶a son obligatorios')
+      setDelegadoError('Nombre, email y contrase‚îú‚ñía son obligatorios')
       return
     }
     try {
       setCreandoDelegado(true)
       await axios.post('/api/delegados', formDelegado, { headers: getAuthHeaders() })
-      setDelegadoSuccess('‘£‡ Delegado creado correctamente')
+      setDelegadoSuccess('√î¬£√† Delegado creado correctamente')
       setFormDelegado({ nombre: '', cargo: '', email: '', password: '' })
       setMostrarFormDelegado(false)
       setTimeout(() => setDelegadoSuccess(''), 3000)
@@ -331,7 +331,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   }
 
   const eliminarDelegado = async (delegadoId: string) => {
-    if (!confirm('-+Seguro que quieres eliminar este delegado? Se borrar+Ì su cuenta.')) return
+    if (!confirm('‚î¨‚îêSeguro que quieres eliminar este delegado? Se borrar‚îú√≠ su cuenta.')) return
     try {
       await axios.delete(`/api/delegados/${delegadoId}`, { headers: getAuthHeaders() })
       setDelegados(prev => prev.filter(d => d.id !== delegadoId))
@@ -389,7 +389,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   const guardarPerfil = async () => {
     if (esEmpresa) {
       if (!perfilEmpresa.nombre_empresa || !perfilEmpresa.cif || !perfilEmpresa.direccion || !perfilEmpresa.tipo_oferta) {
-        setError('Nombre, CIF, direcci+¶n y tipo de oferta son obligatorios')
+        setError('Nombre, CIF, direcci‚îú‚îÇn y tipo de oferta son obligatorios')
         return
       }
       if (!perfilEmpresa.contacto_nombre || !perfilEmpresa.contacto_email || !perfilEmpresa.contacto_telefono) {
@@ -398,7 +398,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
       }
     } else {
       if (!perfilEntidad.nombre_legal || !perfilEntidad.nif || !perfilEntidad.direccion) {
-        setError('Nombre legal, NIF y direcci+¶n son obligatorios')
+        setError('Nombre legal, NIF y direcci‚îú‚îÇn son obligatorios')
         return
       }
       if (!perfilEntidad.admin_nombre || !perfilEntidad.admin_email || !perfilEntidad.admin_telefono) {
@@ -412,7 +412,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
       const datos = esEmpresa ? perfilEmpresa : perfilEntidad
       await axios.post(endpoint, datos, { headers: getAuthHeaders() })
       setTienePerfil(true)
-      setSuccess('‘£‡ Perfil guardado correctamente')
+      setSuccess('√î¬£√† Perfil guardado correctamente')
       setTimeout(() => setSuccess(''), 3000)
       setVista('dashboard')
       cargarActividades()
@@ -534,7 +534,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           actividadesDisponibles: prev.actividadesDisponibles.filter(a => a.id !== actividadId)
         }
       })
-      setSuccess('‘£‡ Invitaci+¶n enviada')
+      setSuccess('√î¬£√† Invitaci‚îú‚îÇn enviada')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al invitar')
@@ -557,10 +557,10 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
       setVoluntariosEditor(prev =>
         prev.map(v => v.id === voluntarioId ? { ...v, estado_actividad: 'pendiente' } : v)
       )
-      setSuccess('‘£‡ Invitaci+¶n enviada al voluntario')
+      setSuccess('√î¬£√† Invitaci‚îú‚îÇn enviada al voluntario')
       setTimeout(() => setSuccess(''), 3000)
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al enviar invitaci+¶n')
+      setError(err.response?.data?.error || 'Error al enviar invitaci‚îú‚îÇn')
       setTimeout(() => setError(''), 3000)
     } finally {
       setInvitando(null)
@@ -576,18 +576,18 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   const gestionarInscripcion = async (inscripcionId: string, accion: 'aceptar' | 'rechazar') => {
     try {
       await axios.put(`/api/inscripciones/gestionar/${inscripcionId}`, { accion }, { headers: getAuthHeaders() })
-      setSuccess(accion === 'aceptar' ? '‘£‡ Voluntario confirmado y notificado' : 'Solicitud rechazada y voluntario notificado')
+      setSuccess(accion === 'aceptar' ? '√î¬£√† Voluntario confirmado y notificado' : 'Solicitud rechazada y voluntario notificado')
       setTimeout(() => setSuccess(''), 3000)
       if (actividadSeleccionada) cargarInscripciones(actividadSeleccionada.id)
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al gestionar inscripci+¶n')
+      setError(err.response?.data?.error || 'Error al gestionar inscripci‚îú‚îÇn')
       setTimeout(() => setError(''), 3000)
     }
   }
 
   const cargarVoluntarios = async (silencioso = false) => {
     try {
-      setVoluntariosCargando(true)
+      if (!silencioso) setVoluntariosCargando(true)
       const endpoint = tabVoluntarios === 'solicitudes'
         ? '/api/entidades/solicitudes-voluntarios'
         : '/api/entidades/todos-voluntarios'
@@ -605,14 +605,14 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
     try {
       await axios.post(`/api/entidades/voluntarios/${voluntarioId}/${accion}`, {}, { headers: getAuthHeaders() })
       setSuccess(
-        accion === 'aceptar' ? '‘£‡ Voluntario aceptado en tu entidad' :
+        accion === 'aceptar' ? '√î¬£√† Voluntario aceptado en tu entidad' :
         accion === 'rechazar' ? 'Solicitud rechazada' :
-        accion === 'vincular' ? '‘£‡ Voluntario a+¶adido a tu entidad' :
+        accion === 'vincular' ? '√î¬£√† Voluntario a‚îú‚ñíadido a tu entidad' :
         'Voluntario desvinculado'
       )
       setTimeout(() => setSuccess(''), 3000)
       cargarVoluntarios()
-      // Si el modal est+Ì abierto, actualizamos vinculaci+¶n
+      // Si el modal est‚îú√≠ abierto, actualizamos vinculaci‚îú‚îÇn
       if (voluntarioDetalle && voluntarioDetalle.voluntario.id === voluntarioId) {
         setVoluntarioDetalle(prev => prev ? {
           ...prev,
@@ -644,7 +644,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
         formMensajeDelegado,
         { headers: getAuthHeaders() }
       )
-      setMensajeDelegadoOk('‘£‡ Mensaje enviado')
+      setMensajeDelegadoOk('√î¬£√† Mensaje enviado')
       setFormMensajeDelegado({ asunto: '', cuerpo: '' })
       setMensajeDelegadoId(null)
       setTimeout(() => setMensajeDelegadoOk(''), 3000)
@@ -664,10 +664,10 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
       setLoading(true)
       if (editandoId) {
         await axios.put(`/api/actividades/${editandoId}`, form, { headers: getAuthHeaders() })
-        setSuccess('‘£‡ Actividad actualizada correctamente')
+        setSuccess('√î¬£√† Actividad actualizada correctamente')
       } else {
         await axios.post('/api/entidades/actividades', form, { headers: getAuthHeaders() })
-        setSuccess('‘£‡ Actividad creada correctamente')
+        setSuccess('√î¬£√† Actividad creada correctamente')
       }
       setError('')
       setForm(formVacio)
@@ -709,7 +709,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   const handleDuplicar = (a: Actividad) => {
     const prox = proximoTrimestre()
     setForm({
-      nombre: `${a.nombre} ‘«Ù ${prox.label}`,
+      nombre: `${a.nombre} √î√á√¥ ${prox.label}`,
       descripcion: a.descripcion,
       objetivo: a.objetivo || '',
       municipio: a.municipio,
@@ -773,11 +773,11 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   const getEstadoActividadLabel = (estado: string | null | undefined) => {
     if (!estado) return null
     const map: Record<string, { label: string; bg: string; color: string; emoji: string }> = {
-      pendiente: { label: 'Invitado', bg: '#fef9c3', color: '#854d0e', emoji: '‘≈¶' },
-      inscrito:  { label: 'Inscrito', bg: '#fef9c3', color: '#854d0e', emoji: '‘≈¶' },
-      confirmado: { label: 'Confirmado', bg: '#dcfce7', color: '#166534', emoji: '‘£‡' },
-      cancelado: { label: 'Rechaz+¶', bg: '#fee2e2', color: '#991b1b', emoji: '‘£Ú' },
-      rechazado: { label: 'Rechaz+¶', bg: '#fee2e2', color: '#991b1b', emoji: '‘£Ú' },
+      pendiente: { label: 'Invitado', bg: '#fef9c3', color: '#854d0e', emoji: '√î√Ö‚îÇ' },
+      inscrito:  { label: 'Inscrito', bg: '#fef9c3', color: '#854d0e', emoji: '√î√Ö‚îÇ' },
+      confirmado: { label: 'Confirmado', bg: '#dcfce7', color: '#166534', emoji: '√î¬£√†' },
+      cancelado: { label: 'Rechaz‚îú‚îÇ', bg: '#fee2e2', color: '#991b1b', emoji: '√î¬£√≤' },
+      rechazado: { label: 'Rechaz‚îú‚îÇ', bg: '#fee2e2', color: '#991b1b', emoji: '√î¬£√≤' },
     }
     return map[estado] || null
   }
@@ -803,7 +803,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
   return (
     <div className="min-h-screen" style={{ background: 'linear-gradient(160deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%)' }}>
 
-      {/* ‘ˆ«‘ˆ« MODAL ACTIVIDAD DESDE DELEGADO ‘ˆ«‘ˆ« */}
+      {/* √î√∂√á√î√∂√á MODAL ACTIVIDAD DESDE DELEGADO √î√∂√á√î√∂√á */}
       {actividadModalDelegado && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -818,9 +818,9 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-bold text-white text-lg leading-tight">{actividadModalDelegado.nombre}</h3>
-                  <p className="text-green-100 text-sm mt-1">≠ÉÙÏ {actividadModalDelegado.municipio}</p>
+                  <p className="text-green-100 text-sm mt-1">¬≠∆í√¥√¨ {actividadModalDelegado.municipio}</p>
                 </div>
-                <button onClick={() => setActividadModalDelegado(null)} className="text-white/60 hover:text-white text-xl ml-4">‘£Ú</button>
+                <button onClick={() => setActividadModalDelegado(null)} className="text-white/60 hover:text-white text-xl ml-4">√î¬£√≤</button>
               </div>
               <span className={`mt-3 inline-block text-xs font-semibold px-3 py-1 rounded-full ${actividadModalDelegado.estado === 'publicada' ? 'bg-green-200 text-green-900' : 'bg-gray-200 text-gray-700'}`}>
                 {actividadModalDelegado.estado}
@@ -858,7 +858,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 <button
                   onClick={() => { setActividadModalDelegado(null); handleEditar(actividadModalDelegado) }}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 text-blue-600 border-blue-200 hover:bg-blue-50 transition"
-                >‘£≈¥©≈ Editar</button>
+                >√î¬£√Ö¬¥¬©√Ö Editar</button>
                 <button
                   onClick={() => setActividadModalDelegado(null)}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
@@ -870,7 +870,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
         </div>
       )}
 
-      {/* ‘ˆ«‘ˆ« MODAL DETALLE VOLUNTARIO ‘ˆ«‘ˆ« */}
+      {/* √î√∂√á√î√∂√á MODAL DETALLE VOLUNTARIO √î√∂√á√î√∂√á */}
       {voluntarioDetalle && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -896,10 +896,10 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                     <p className="text-sm text-gray-400">{voluntarioDetalle.voluntario.email}</p>
                     <div className="flex flex-wrap gap-3 mt-1">
                       {voluntarioDetalle.voluntario.telefono && (
-                        <span className="text-xs text-gray-400">≠ÉÙ◊ {voluntarioDetalle.voluntario.telefono}</span>
+                        <span className="text-xs text-gray-400">¬≠∆í√¥√ó {voluntarioDetalle.voluntario.telefono}</span>
                       )}
                       {voluntarioDetalle.voluntario.municipio && (
-                        <span className="text-xs text-gray-400">≠ÉÙÏ {voluntarioDetalle.voluntario.municipio}</span>
+                        <span className="text-xs text-gray-400">¬≠∆í√¥√¨ {voluntarioDetalle.voluntario.municipio}</span>
                       )}
                     </div>
                   </div>
@@ -907,32 +907,32 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 <button
                   onClick={() => { setVoluntarioDetalle(null); setMostrarPerfilVoluntario(false) }}
                   className="text-gray-300 hover:text-gray-500 text-xl font-light flex-shrink-0"
-                >‘£Ú</button>
+                >√î¬£√≤</button>
               </div>
 
-              {/* Vinculaci+¶n y acciones r+Ìpidas */}
+              {/* Vinculaci‚îú‚îÇn y acciones r‚îú√≠pidas */}
               <div className="flex flex-wrap gap-2 mt-4">
                 {voluntarioDetalle.voluntario.vinculacion === 'aceptado' ? (
-                  <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-green-100 text-green-700">‘£‡ Vinculado a tu entidad</span>
+                  <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-green-100 text-green-700">√î¬£√† Vinculado a tu entidad</span>
                 ) : voluntarioDetalle.voluntario.vinculacion === 'pendiente' ? (
                   <>
-                    <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-600">‘≈¶ Solicitud pendiente</span>
+                    <span className="text-xs font-semibold px-3 py-1.5 rounded-full bg-yellow-50 text-yellow-600">√î√Ö‚îÇ Solicitud pendiente</span>
                     <button
                       onClick={() => gestionarVoluntario(voluntarioDetalle.voluntario.id, 'aceptar')}
                       className="text-xs font-semibold px-3 py-1.5 rounded-full text-white"
                       style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
-                    >‘£‡ Aceptar solicitud</button>
+                    >√î¬£√† Aceptar solicitud</button>
                     <button
                       onClick={() => gestionarVoluntario(voluntarioDetalle.voluntario.id, 'rechazar')}
                       className="text-xs font-semibold px-3 py-1.5 rounded-full bg-red-50 text-red-600"
-                    >‘£Ú Rechazar</button>
+                    >√î¬£√≤ Rechazar</button>
                   </>
                 ) : (
                   <button
                     onClick={() => gestionarVoluntario(voluntarioDetalle.voluntario.id, 'vincular')}
                     className="text-xs font-semibold px-3 py-1.5 rounded-full text-white"
                     style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
-                  >‘◊Ú A+¶adir a mi entidad</button>
+                  >√î√ó√≤ A‚îú‚ñíadir a mi entidad</button>
                 )}
                 <button
                   onClick={() => {
@@ -942,11 +942,11 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                     setVista('mensajes')
                   }}
                   className="text-xs font-semibold px-3 py-1.5 rounded-full bg-purple-50 text-purple-600 hover:bg-purple-100 transition"
-                >≠É∆º Enviar mensaje</button>
+                >¬≠∆í√Ü¬º Enviar mensaje</button>
                 <button
                   onClick={() => setMostrarPerfilVoluntario(p => !p)}
                   className={`text-xs font-semibold px-3 py-1.5 rounded-full transition ${mostrarPerfilVoluntario ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
-                >≠ÉÊÒ Perfil</button>
+                >¬≠∆í√¶√± Perfil</button>
                 {voluntarioDetalle.voluntario.vinculacion === 'aceptado' && (
                   <button
                     onClick={() => gestionarVoluntario(voluntarioDetalle.voluntario.id, 'desvincular')}
@@ -955,7 +955,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 )}
               </div>
             </div>
-            {/* Datos del perfil ‘«ˆ se muestra al pulsar bot+¶n Perfil */}
+            {/* Datos del perfil √î√á√∂ se muestra al pulsar bot‚îú‚îÇn Perfil */}
             {mostrarPerfilVoluntario && (
               <div className="px-6 py-4 bg-blue-50/40 border-b border-blue-100 grid grid-cols-2 gap-3">
                 {voluntarioDetalle.voluntario.fecha_nacimiento && (
@@ -975,9 +975,9 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   </div>
                 )}
                 {voluntarioDetalle.voluntario.municipio &&
-                 voluntarioDetalle.voluntario.municipio !== 'Sin direcci+¶n' && (
+                 voluntarioDetalle.voluntario.municipio !== 'Sin direcci‚îú‚îÇn' && (
                   <div>
-                    <p className="text-xs text-gray-400 uppercase tracking-wide">Direcci+¶n</p>
+                    <p className="text-xs text-gray-400 uppercase tracking-wide">Direcci‚îú‚îÇn</p>
                     <p className="text-sm font-medium text-gray-700">{voluntarioDetalle.voluntario.municipio}</p>
                   </div>
                 )}
@@ -1006,13 +1006,13 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   onClick={() => setMostrarPerfilVoluntario(false)}
                   className="px-5 py-2 rounded-xl text-sm font-semibold border-2 border-blue-200 text-blue-600 hover:bg-blue-50 transition flex items-center gap-2"
                 >
-                  ‘Â… Volver a actividades
+                  √î√•√â Volver a actividades
                 </button>
               </div>
             ) : detalleLoading ? (
               <div className="p-8 text-center text-gray-400">
-                <p className="text-3xl mb-2">‘≈¶</p>
-                <p className="text-sm">Cargando informaci+¶n...</p>
+                <p className="text-3xl mb-2">√î√Ö‚îÇ</p>
+                <p className="text-sm">Cargando informaci‚îú‚îÇn...</p>
               </div>
             ) : (
               <div className="p-6 space-y-6">
@@ -1020,7 +1020,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 {/* Actividades en las que YA participa */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <span>≠ÉÙÔ Actividades en las que participa</span>
+                    <span>¬≠∆í√¥√Ø Actividades en las que participa</span>
                     {voluntarioDetalle.actividades.length > 0 && (
                       <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-0.5 rounded-full">
                         {voluntarioDetalle.actividades.length}
@@ -1029,7 +1029,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   </h4>
                   {voluntarioDetalle.actividades.length === 0 ? (
                     <p className="text-sm text-gray-400 bg-gray-50 rounded-xl p-4 text-center">
-                      No participa en ninguna actividad de tu entidad a+¶n
+                      No participa en ninguna actividad de tu entidad a‚îú‚ïën
                     </p>
                   ) : (
                     <div className="space-y-2">
@@ -1054,7 +1054,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 {/* Actividades disponibles para invitar */}
                 <div>
                   <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                    <span>≠ÉÙø Invitar a otra actividad</span>
+                    <span>¬≠∆í√¥¬ø Invitar a otra actividad</span>
                     {voluntarioDetalle.actividadesDisponibles.length > 0 && (
                       <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded-full">
                         {voluntarioDetalle.actividadesDisponibles.length} disponibles
@@ -1063,7 +1063,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   </h4>
                   {voluntarioDetalle.actividadesDisponibles.length === 0 ? (
                     <p className="text-sm text-gray-400 bg-gray-50 rounded-xl p-4 text-center">
-                      Ya est+Ì invitado o inscrito en todas tus actividades publicadas
+                      Ya est‚îú√≠ invitado o inscrito en todas tus actividades publicadas
                     </p>
                   ) : (
                     <div className="space-y-2">
@@ -1071,7 +1071,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         <div key={a.id} className="flex items-center justify-between bg-blue-50/50 rounded-xl px-4 py-3 border border-blue-100">
                           <div className="min-w-0 mr-3">
                             <p className="text-sm text-gray-700 font-medium truncate">{a.nombre}</p>
-                            <p className="text-xs text-gray-400">≠ÉÙÏ {a.municipio} -¿ {formatFecha(a.fecha_inicio)}</p>
+                            <p className="text-xs text-gray-400">¬≠∆í√¥√¨ {a.municipio} ‚î¨√Ä {formatFecha(a.fecha_inicio)}</p>
                           </div>
                           <button
                             onClick={() => invitarDesdeDetalle(a.id)}
@@ -1079,7 +1079,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                             className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white hover:opacity-90 transition disabled:opacity-50 flex-shrink-0"
                             style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
                           >
-                            {invitandoDesdeDetalle === a.id ? '...' : '≠ÉÙø Invitar'}
+                            {invitandoDesdeDetalle === a.id ? '...' : '¬≠∆í√¥¬ø Invitar'}
                           </button>
                         </div>
                       ))}
@@ -1095,7 +1095,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
 
       <nav className="px-4 sm:px-6 py-3 flex justify-between items-center shadow-sm" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
         <div className="flex items-center gap-2">
-          <span className="text-2xl">≠ÉÓ+</span>
+          <span className="text-2xl">¬≠∆í√Æ‚îê</span>
           <span className="font-bold text-base sm:text-lg text-white">Thanks For It</span>
           <span className="hidden sm:inline" style={{ fontSize: '11px', background: 'rgba(255,255,255,0.2)', color: 'white', padding: '2px 10px', borderRadius: '999px', marginLeft: '8px' }}>Entidad Social</span>
         </div>
@@ -1105,7 +1105,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
             onClick={() => setVista('mensajes')}
             className="relative text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl border border-white text-white hover:bg-white hover:text-green-800 transition"
           >
-            ≠ÉÙº
+            ¬≠∆í√¥¬º
             {noLeidos > 0 && (
               <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {noLeidos > 9 ? '9+' : noLeidos}
@@ -1113,17 +1113,17 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
             )}
           </button>
           <button onClick={onLogout} className="text-sm font-semibold px-3 sm:px-4 py-2 rounded-xl border border-white text-white hover:bg-white hover:text-green-800 transition">
-            <span className="hidden sm:inline">Cerrar sesi+¶n</span>
-            <span className="sm:hidden">‘£Ú</span>
+            <span className="hidden sm:inline">Cerrar sesi‚îú‚îÇn</span>
+            <span className="sm:hidden">√î¬£√≤</span>
           </button>
         </div>
       </nav>
 
       <div className="max-w-5xl mx-auto p-3 sm:p-6">
         <div className="rounded-2xl sm:rounded-3xl p-5 sm:p-8 mb-6 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
-          <div className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 text-5xl sm:text-8xl opacity-20">≠É≈Û</div>
-          <h2 className="text-xl sm:text-3xl font-bold text-white mb-1 pr-12">-ÌHola, {(esEmpresa ? perfilEmpresa.contacto_nombre : perfilEntidad.admin_nombre) || usuario.email.split('@')[0]}! ≠ÉÊÔ Bienvenido/a a Thanks For It</h2>
-          <p className="text-green-100 text-sm sm:text-base">Gestiona tus actividades y voluntarios -¿ <span className="font-semibold">{trimestreActual()}</span></p>
+          <div className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 text-5xl sm:text-8xl opacity-20">¬≠∆í√Ö√≥</div>
+          <h2 className="text-xl sm:text-3xl font-bold text-white mb-1 pr-12">‚î¨√≠Hola, {(esEmpresa ? perfilEmpresa.contacto_nombre : perfilEntidad.admin_nombre) || usuario.email.split('@')[0]}! ¬≠∆í√¶√Ø Bienvenido/a a Thanks For It</h2>
+          <p className="text-green-100 text-sm sm:text-base">Gestiona tus actividades y voluntarios ‚î¨√Ä <span className="font-semibold">{trimestreActual()}</span></p>
         </div>
 
         {success && <div className="bg-green-50 text-green-700 p-4 rounded-2xl mb-4 text-sm">{success}</div>}
@@ -1134,24 +1134,24 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           <button onClick={() => setVista('dashboard')}
             className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-xs sm:text-sm transition ${vista === 'dashboard' || vista === 'inscripciones' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             style={vista === 'dashboard' || vista === 'inscripciones' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
-            ≠ÉÙÔ Mis Actividades
+            ¬≠∆í√¥√Ø Mis Actividades
           </button>
           <button onClick={() => { setVista('nueva'); setError(''); setSuccess(''); resetForm() }}
             className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-xs sm:text-sm transition ${vista === 'nueva' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             style={vista === 'nueva' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
-            ‘◊Ú {editandoId ? 'Editar' : 'Nueva'}
+            √î√ó√≤ {editandoId ? 'Editar' : 'Nueva'}
           </button>
           <button onClick={() => { setVista('voluntarios'); setTabVoluntarios('solicitudes') }}
             className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-xs sm:text-sm transition ${vista === 'voluntarios' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             style={vista === 'voluntarios' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
-            ≠É÷Ô Voluntarios
+            ¬≠∆í√ñ√Ø Voluntarios
           </button>
           <button
             onClick={() => setVista('mensajes')}
             className={`relative px-3 sm:px-5 py-2 rounded-xl font-medium text-xs sm:text-sm transition ${vista === 'mensajes' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             style={vista === 'mensajes' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}
           >
-            ≠ÉÙº Mensajes
+            ¬≠∆í√¥¬º Mensajes
             {noLeidos > 0 && (
               <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {noLeidos > 9 ? '9+' : noLeidos}
@@ -1161,17 +1161,17 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           <button onClick={() => setVista('perfil')}
             className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-xs sm:text-sm transition ${vista === 'perfil' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             style={vista === 'perfil' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
-            ≠É≈Û Mi Perfil
+            ¬≠∆í√Ö√≥ Mi Perfil
           </button>
           <button onClick={() => setVista('delegados')}
             className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-xs sm:text-sm transition ${vista === 'delegados' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             style={vista === 'delegados' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
-            ≠ÉÊ— Delegados
+            ¬≠∆í√¶√ë Delegados
           </button>
           <button onClick={() => { setVista('horas'); setHorasEntidadCount(0) }}
             className={`relative px-3 sm:px-5 py-2 rounded-xl font-medium text-xs sm:text-sm transition ${vista === 'horas' ? 'text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
             style={vista === 'horas' ? { background: 'linear-gradient(135deg, #16a34a, #15803d)' } : {}}>
-            ‘≈¶¥©≈ Horas
+            √î√Ö‚ñí¬¥¬©√Ö Horas
             {horasEntidadCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
                 {horasEntidadCount > 9 ? '9+' : horasEntidadCount}
@@ -1180,20 +1180,20 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           </button>
         </div>
 
-        {/* ‘ˆ«‘ˆ« ACTIVIDADES ‘ˆ«‘ˆ« */}
+        {/* √î√∂√á√î√∂√á ACTIVIDADES √î√∂√á√î√∂√á */}
         {vista === 'dashboard' && (
           loading ? (
             <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
-              <p className="text-4xl mb-2">‘≈¶</p><p>Cargando actividades...</p>
+              <p className="text-4xl mb-2">√î√Ö‚îÇ</p><p>Cargando actividades...</p>
             </div>
           ) : actividades.length === 0 ? (
             <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
-              <p className="text-4xl mb-2">≠Éˆ°</p>
+              <p className="text-4xl mb-2">¬≠∆í√∂¬°</p>
               <p className="font-medium">No tienes actividades creadas</p>
               <button onClick={() => setVista('nueva')}
                 className="mt-4 px-6 py-2 rounded-xl text-sm font-semibold text-white"
                 style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                ‘◊Ú Crear actividad
+                √î√ó√≤ Crear actividad
               </button>
             </div>
           ) : (
@@ -1208,19 +1208,19 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   </div>
                   <p className="text-sm text-gray-500 mb-3 line-clamp-2">{a.descripcion}</p>
                   <div className="space-y-1 text-xs text-gray-500 mb-4">
-                    <p>≠ÉÙÏ {a.municipio}</p>
-                    <p>≠ÉÙ‡ {formatFecha(a.fecha_inicio)} ‘Â∆ {formatFecha(a.fecha_fin)}</p>
+                    <p>¬≠∆í√¥√¨ {a.municipio}</p>
+                    <p>¬≠∆í√¥√† {formatFecha(a.fecha_inicio)} √î√•√Ü {formatFecha(a.fecha_fin)}</p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span>≠ÉÊ— Objetivo: <span className="font-semibold">{a.num_voluntarios_objetivo}</span></span>
-                      <span className="text-gray-300">-¿</span>
+                      <span>¬≠∆í√¶√ë Objetivo: <span className="font-semibold">{a.num_voluntarios_objetivo}</span></span>
+                      <span className="text-gray-300">‚î¨√Ä</span>
                       <span>Inscritos: <span className="font-semibold text-green-600">{Number(a.total_inscritos) || 0}</span></span>
-                      <span className="text-gray-300">-¿</span>
+                      <span className="text-gray-300">‚î¨√Ä</span>
                       <span>Faltan: <span className={`font-semibold ${Math.max(0, a.num_voluntarios_objetivo - (Number(a.total_inscritos) || 0)) === 0 ? 'text-green-600' : 'text-orange-500'}`}>
                         {Math.max(0, a.num_voluntarios_objetivo - (Number(a.total_inscritos) || 0))}
                       </span></span>
                     </div>
                     {a.delegado_nombre && (
-                      <p className="text-blue-600 font-medium">≠ÉÊÒ {a.delegado_nombre}{a.delegado_cargo ? ` -¿ ${a.delegado_cargo}` : ''}</p>
+                      <p className="text-blue-600 font-medium">¬≠∆í√¶√± {a.delegado_nombre}{a.delegado_cargo ? ` ‚î¨√Ä ${a.delegado_cargo}` : ''}</p>
                     )}
                   </div>
                   <div className="flex gap-2">
@@ -1228,19 +1228,19 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                       onClick={() => abrirInscripciones(a)}
                       className="flex-1 py-2 rounded-xl text-xs font-semibold text-white transition hover:opacity-90"
                       style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                      ≠ÉÊ— Ver inscripciones
+                      ¬≠∆í√¶√ë Ver inscripciones
                     </button>
                     <button
                       onClick={() => handleEditar(a)}
                       className="px-3 py-2 rounded-xl text-xs font-semibold border-2 transition hover:bg-blue-50"
                       style={{ borderColor: '#3b82f6', color: '#3b82f6' }}>
-                      ‘£≈¥©≈ Editar
+                      √î¬£√Ö¬¥¬©√Ö Editar
                     </button>
                     <button
                       onClick={() => handleDuplicar(a)}
                       className="px-3 py-2 rounded-xl text-xs font-semibold border-2 transition hover:bg-green-50"
                       style={{ borderColor: '#16a34a', color: '#16a34a' }}>
-                      ≠ÉÙÔ
+                      ¬≠∆í√¥√Ø
                     </button>
                   </div>
                 </div>
@@ -1249,34 +1249,34 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           )
         )}
 
-        {/* ‘ˆ«‘ˆ« INSCRIPCIONES DE UNA ACTIVIDAD ‘ˆ«‘ˆ« */}
+        {/* √î√∂√á√î√∂√á INSCRIPCIONES DE UNA ACTIVIDAD √î√∂√á√î√∂√á */}
         {vista === 'inscripciones' && actividadSeleccionada && (
           <div>
             <div className="flex items-center gap-3 mb-5">
               <button onClick={() => setVista('dashboard')} className="text-sm text-gray-500 hover:text-gray-700">
-                ‘Â… Volver
+                √î√•√â Volver
               </button>
               <div>
                 <h3 className="font-semibold text-gray-800">{actividadSeleccionada.nombre}</h3>
-                <p className="text-xs text-gray-400">≠ÉÙÏ {actividadSeleccionada.municipio}</p>
+                <p className="text-xs text-gray-400">¬≠∆í√¥√¨ {actividadSeleccionada.municipio}</p>
               </div>
             </div>
 
             {inscLoading ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
-                <p className="text-4xl mb-2">‘≈¶</p><p>Cargando inscripciones...</p>
+                <p className="text-4xl mb-2">√î√Ö‚îÇ</p><p>Cargando inscripciones...</p>
               </div>
             ) : inscripciones.length === 0 ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl border border-gray-100">
-                <p className="text-4xl mb-2">≠Éˆ°</p>
+                <p className="text-4xl mb-2">¬≠∆í√∂¬°</p>
                 <p className="font-medium">No hay inscripciones en esta actividad</p>
-                <p className="text-sm mt-1 text-gray-300">Cuando un voluntario se inscriba, aparecer+Ì aqu+°</p>
+                <p className="text-sm mt-1 text-gray-300">Cuando un voluntario se inscriba, aparecer‚îú√≠ aqu‚îú¬°</p>
                 <button
                   onClick={() => handleEditar(actividadSeleccionada)}
                   className="mt-4 px-5 py-2 rounded-xl text-sm font-semibold text-white hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
                 >
-                  ≠ÉÙø Invitar voluntarios
+                  ¬≠∆í√¥¬ø Invitar voluntarios
                 </button>
               </div>
             ) : (
@@ -1288,7 +1288,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                     className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white hover:opacity-90"
                     style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
                   >
-                    ≠ÉÙø Invitar m+Ìs voluntarios
+                    ¬≠∆í√¥¬ø Invitar m‚îú√≠s voluntarios
                   </button>
                 </div>
                 {inscripciones.map(insc => {
@@ -1310,10 +1310,10 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                             <p className="font-semibold text-gray-800">{volNombre}</p>
                             <p className="text-sm text-gray-400">{insc.email}</p>
                             <div className="flex flex-wrap gap-2 mt-1">
-                              {insc.telefono && <span className="text-xs text-gray-400">≠ÉÙ◊ {insc.telefono}</span>}
-                              {insc.municipio && <span className="text-xs text-gray-400">≠ÉÙÏ {insc.municipio}</span>}
+                              {insc.telefono && <span className="text-xs text-gray-400">¬≠∆í√¥√ó {insc.telefono}</span>}
+                              {insc.municipio && <span className="text-xs text-gray-400">¬≠∆í√¥√¨ {insc.municipio}</span>}
                               <span className="text-xs text-gray-400">
-                                Solicit+¶ {new Date(insc.fecha_inscripcion).toLocaleDateString('es-ES')}
+                                Solicit‚îú‚îÇ {new Date(insc.fecha_inscripcion).toLocaleDateString('es-ES')}
                               </span>
                             </div>
                           </div>
@@ -1329,19 +1329,19 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                                 className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition"
                                 style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
                               >
-                                ‘£‡ Aceptar
+                                √î¬£√† Aceptar
                               </button>
                               <button
                                 onClick={() => gestionarInscripcion(insc.id, 'rechazar')}
                                 className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition"
                               >
-                                ‘£Ú Rechazar
+                                √î¬£√≤ Rechazar
                               </button>
                               <button
                                 onClick={() => { setChatInicialUsuarioId(insc.usuario_id); setChatInicialEmail(insc.email); setVista('mensajes') }}
                                 className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-purple-50 text-purple-600 hover:bg-purple-100 transition"
                               >
-                                ≠É∆º Chat
+                                ¬≠∆í√Ü¬º Chat
                               </button>
                             </div>
                           )}
@@ -1350,13 +1350,13 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                                onClick={() => {
                                  setChatInicialUsuarioId(insc.usuario_id)
                                  setChatInicialEmail(insc.email)
-                                 setChatInicialActividadId(actividadSeleccionada?.id)        // ‘Â… nuevo
-                                 setChatInicialActividadNombre(actividadSeleccionada?.nombre) // ‘Â… nuevo
+                                 setChatInicialActividadId(actividadSeleccionada?.id)        // √î√•√â nuevo
+                                 setChatInicialActividadNombre(actividadSeleccionada?.nombre) // √î√•√â nuevo
                                  setVista('mensajes')
                               }}
                               className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-purple-50 text-purple-600 hover:bg-purple-100 transition"
                              >
-                              ≠É∆º Chat actividad
+                              ¬≠∆í√Ü¬º Chat actividad
                             </button>
                           )}
                         </div>
@@ -1369,29 +1369,29 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           </div>
         )}
 
-        {/* ‘ˆ«‘ˆ« VOLUNTARIOS (panel principal) ‘ˆ«‘ˆ« */}
+        {/* √î√∂√á√î√∂√á VOLUNTARIOS (panel principal) √î√∂√á√î√∂√á */}
         {vista === 'voluntarios' && (
           <div>
             <div className="flex gap-2 mb-5">
               <button onClick={() => setTabVoluntarios('solicitudes')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tabVoluntarios === 'solicitudes' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
-                ≠ÉÙº Solicitudes pendientes
+                ¬≠∆í√¥¬º Solicitudes pendientes
               </button>
               <button onClick={() => setTabVoluntarios('todos')}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition ${tabVoluntarios === 'todos' ? 'bg-green-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}>
-                ≠ÉÊ— Todos los voluntarios
+                ¬≠∆í√¶√ë Todos los voluntarios
               </button>
             </div>
 
             <div className="bg-white rounded-xl shadow-sm p-3 mb-4 flex gap-3 border border-gray-100">
               <input
                 className="flex-1 text-sm outline-none text-gray-700"
-                placeholder="≠ÉˆÏ Buscar por nombre, email o municipio..."
+                placeholder="¬≠∆í√∂√¨ Buscar por nombre, email o municipio..."
                 value={busquedaVoluntario}
                 onChange={e => setBusquedaVoluntario(e.target.value)}
               />
               {busquedaVoluntario && (
-                <button onClick={() => setBusquedaVoluntario('')} className="text-gray-300 hover:text-gray-500 text-sm">‘£Ú</button>
+                <button onClick={() => setBusquedaVoluntario('')} className="text-gray-300 hover:text-gray-500 text-sm">√î¬£√≤</button>
               )}
               <select
                 className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-600 focus:outline-none focus:border-green-500"
@@ -1406,19 +1406,19 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
 
             {tabVoluntarios === 'todos' && (
               <p className="text-xs text-gray-400 mb-3 px-1">
-                ≠É∆Ì Haz clic en cualquier voluntario para ver sus actividades e invitarle a otras
+                ¬≠∆í√Ü√≠ Haz clic en cualquier voluntario para ver sus actividades e invitarle a otras
               </p>
             )}
 
             {voluntariosCargando ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
-                <p className="text-4xl mb-2">‘≈¶</p><p>Cargando...</p>
+                <p className="text-4xl mb-2">√î√Ö‚îÇ</p><p>Cargando...</p>
               </div>
             ) : voluntariosFiltrados.length === 0 ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl border border-gray-100">
-                <p className="text-4xl mb-2">{tabVoluntarios === 'solicitudes' ? '≠ÉÙº' : '≠Éˆ°'}</p>
+                <p className="text-4xl mb-2">{tabVoluntarios === 'solicitudes' ? '¬≠∆í√¥¬º' : '¬≠∆í√∂¬°'}</p>
                 <p className="font-medium">
-                  {tabVoluntarios === 'solicitudes' ? 'No hay solicitudes pendientes' : 'No hay voluntarios registrados todav+°a'}
+                  {tabVoluntarios === 'solicitudes' ? 'No hay solicitudes pendientes' : 'No hay voluntarios registrados todav‚îú¬°a'}
                 </p>
               </div>
             ) : (
@@ -1439,30 +1439,30 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                           <p className="font-semibold text-gray-800 truncate">{v.nombre} {v.apellidos}</p>
                           <p className="text-sm text-gray-400 truncate">{v.email}</p>
                           <div className="flex flex-wrap gap-3 mt-1">
-                            {v.telefono && <span className="text-xs text-gray-400">≠ÉÙ◊ {v.telefono}</span>}
-                            {v.municipio && <span className="text-xs text-gray-400">≠ÉÙÏ {v.municipio}</span>}
+                            {v.telefono && <span className="text-xs text-gray-400">¬≠∆í√¥√ó {v.telefono}</span>}
+                            {v.municipio && <span className="text-xs text-gray-400">¬≠∆í√¥√¨ {v.municipio}</span>}
                           </div>
                         </div>
                       </div>
                       <div className="flex flex-col gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                        {tabVoluntarios === 'solicitudes' && false && (
+                        {tabVoluntarios === 'solicitudes' && v.vinculacion === 'pendiente' && (
                           <>
                             <button onClick={() => gestionarVoluntario(v.id, 'aceptar')}
                               className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90"
                               style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                              ‘£‡ Aceptar
+                              √î¬£√† Aceptar
                             </button>
                             <button onClick={() => gestionarVoluntario(v.id, 'rechazar')}
                               className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-600 hover:bg-red-100 transition">
-                              ‘£Ú Rechazar
+                              √î¬£√≤ Rechazar
                             </button>
                           </>
                         )}
                         {tabVoluntarios === 'solicitudes' && v.vinculacion === 'aceptado' && (
-                          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700">‘£‡ Aceptado</span>
+                          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700">√î¬£√† Aceptado</span>
                         )}
                         {tabVoluntarios === 'todos' && (
-                          <span className="text-xs text-gray-300 flex items-center gap-1">Ver detalle ‘Â∆</span>
+                          <span className="text-xs text-gray-300 flex items-center gap-1">Ver detalle √î√•√Ü</span>
                         )}
                       </div>
                     </div>
@@ -1473,7 +1473,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           </div>
         )}
 
-        {/* ‘ˆ«‘ˆ« NUEVA / EDITAR ACTIVIDAD ‘ˆ«‘ˆ« */}
+        {/* √î√∂√á√î√∂√á NUEVA / EDITAR ACTIVIDAD √î√∂√á√î√∂√á */}
         {vista === 'nueva' && (
           <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div className="flex border-b border-gray-100">
@@ -1481,12 +1481,12 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 onClick={() => setTabEditor('datos')}
                 className={`flex-1 py-4 text-sm font-medium transition ${tabEditor === 'datos' ? 'text-green-700 border-b-2 border-green-600 bg-green-50' : 'text-gray-500 hover:text-gray-700'}`}
               >
-                ≠ÉÙÔ Datos de la actividad
+                ¬≠∆í√¥√Ø Datos de la actividad
               </button>
               <button
                 onClick={() => {
                   if (!editandoId) {
-                    setError('Guarda primero los datos b+Ìsicos para poder invitar voluntarios')
+                    setError('Guarda primero los datos b‚îú√≠sicos para poder invitar voluntarios')
                     setTimeout(() => setError(''), 3000)
                     return
                   }
@@ -1494,7 +1494,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 }}
                 className={`flex-1 py-4 text-sm font-medium transition relative ${tabEditor === 'voluntarios' ? 'text-green-700 border-b-2 border-green-600 bg-green-50' : 'text-gray-500 hover:text-gray-700'} ${!editandoId ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                ≠ÉÙø Invitar voluntarios
+                ¬≠∆í√¥¬ø Invitar voluntarios
                 {invitadosExito.size > 0 && (
                   <span className="ml-2 bg-green-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                     {invitadosExito.size}
@@ -1509,7 +1509,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
             {tabEditor === 'datos' && (
               <div className="p-8">
                 <h3 className="text-lg font-semibold mb-6">
-                  {editandoId ? '‘£≈¥©≈ Editar Actividad' : '‘◊Ú Nueva Actividad de Voluntariado'}
+                  {editandoId ? '√î¬£√Ö¬¥¬©√Ö Editar Actividad' : '√î√ó√≤ Nueva Actividad de Voluntariado'}
                 </h3>
 
                 {error && <div className="bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4">{error}</div>}
@@ -1522,7 +1522,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                       value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Descripci+¶n</label>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Descripci‚îú‚îÇn</label>
                     <textarea className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500 h-24 resize-none"
                       placeholder="Describe la actividad..."
                       value={form.descripcion} onChange={e => setForm({ ...form, descripcion: e.target.value })} />
@@ -1542,7 +1542,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   <div>
                     <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Horarios</label>
                     <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-                      placeholder="Ej: S+Ìbados 10:00-14:00"
+                      placeholder="Ej: S‚îú√≠bados 10:00-14:00"
                       value={form.horarios} onChange={e => setForm({ ...form, horarios: e.target.value })} />
                   </div>
                   <div>
@@ -1556,22 +1556,22 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                       value={form.fecha_fin} onChange={e => setForm({ ...form, fecha_fin: e.target.value })} />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">N-¶ voluntarios objetivo</label>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">N‚î¨‚ïë voluntarios objetivo</label>
                     <input type="number" min="1" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                       value={form.num_voluntarios_objetivo}
                       onChange={e => setForm({ ...form, num_voluntarios_objetivo: parseInt(e.target.value) || 1 })} />
                   </div>
                   {delegadosForm.length > 0 && (
                     <div className="md:col-span-2">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">≠ÉÊ— Delegado responsable</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">¬≠∆í√¶√ë Delegado responsable</label>
                       <select
                         className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         value={form.delegado_id}
                         onChange={e => setForm({ ...form, delegado_id: e.target.value })}
                       >
-                        <option value="">‘«ˆ Sin delegado asignado ‘«ˆ</option>
+                        <option value="">√î√á√∂ Sin delegado asignado √î√á√∂</option>
                         {delegadosForm.map(d => (
-                          <option key={d.id} value={d.id}>{d.nombre}{d.cargo ? ` -¿ ${d.cargo}` : ''}</option>
+                          <option key={d.id} value={d.id}>{d.nombre}{d.cargo ? ` ‚î¨√Ä ${d.cargo}` : ''}</option>
                         ))}
                       </select>
                     </div>
@@ -1579,7 +1579,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   <div className="flex items-center gap-3 pt-6">
                     <input type="checkbox" id="publicar" checked={form.publicar_buscador}
                       onChange={e => setForm({ ...form, publicar_buscador: e.target.checked })} />
-                    <label htmlFor="publicar" className="text-sm text-gray-600">Publicar en el buscador p+¶blico</label>
+                    <label htmlFor="publicar" className="text-sm text-gray-600">Publicar en el buscador p‚îú‚ïëblico</label>
                   </div>
                 </div>
 
@@ -1591,13 +1591,13 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                   <button onClick={handleCrear} disabled={loading}
                     className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-50 transition"
                     style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                    {loading ? 'Guardando...' : editandoId ? '‘£‡ Guardar cambios' : '‘£‡ Crear actividad'}
+                    {loading ? 'Guardando...' : editandoId ? '√î¬£√† Guardar cambios' : '√î¬£√† Crear actividad'}
                   </button>
                 </div>
 
                 {editandoId && (
                   <p className="text-center text-xs text-gray-400 mt-3">
-                    ≠É∆Ì Despu+Æs de guardar puedes ir a la pesta+¶a "Invitar voluntarios" para a+¶adir voluntarios directamente
+                    ¬≠∆í√Ü√≠ Despu‚îú¬Æs de guardar puedes ir a la pesta‚îú‚ñía "Invitar voluntarios" para a‚îú‚ñíadir voluntarios directamente
                   </p>
                 )}
               </div>
@@ -1606,39 +1606,39 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
             {tabEditor === 'voluntarios' && editandoId && (
               <div className="p-8">
                 <div className="mb-5">
-                  <h3 className="text-lg font-semibold text-gray-800">≠ÉÙø Invitar voluntarios</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">¬≠∆í√¥¬ø Invitar voluntarios</h3>
                   <p className="text-sm text-gray-400 mt-1">
-                    Invita a voluntarios de la plataforma a esta actividad. Recibir+Ìn un mensaje y podr+Ìn aceptar o rechazar.
+                    Invita a voluntarios de la plataforma a esta actividad. Recibir‚îú√≠n un mensaje y podr‚îú√≠n aceptar o rechazar.
                   </p>
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-3 mb-5 flex gap-3 border border-gray-100">
                   <input
                     className="flex-1 text-sm outline-none bg-transparent text-gray-700"
-                    placeholder="≠ÉˆÏ Buscar por nombre, email o municipio..."
+                    placeholder="¬≠∆í√∂√¨ Buscar por nombre, email o municipio..."
                     value={busquedaEditor}
                     onChange={e => setBusquedaEditor(e.target.value)}
                   />
                   {busquedaEditor && (
-                    <button onClick={() => setBusquedaEditor('')} className="text-gray-300 hover:text-gray-500 text-sm">‘£Ú</button>
+                    <button onClick={() => setBusquedaEditor('')} className="text-gray-300 hover:text-gray-500 text-sm">√î¬£√≤</button>
                   )}
                 </div>
 
                 {invitadosExito.size > 0 && (
                   <div className="bg-green-50 border border-green-100 rounded-xl p-3 mb-4 text-sm text-green-700">
-                    ‘£‡ Has invitado a <span className="font-semibold">{invitadosExito.size} voluntario{invitadosExito.size > 1 ? 's' : ''}</span> en esta sesi+¶n. Recibir+Ìn un mensaje autom+Ìtico.
+                    √î¬£√† Has invitado a <span className="font-semibold">{invitadosExito.size} voluntario{invitadosExito.size > 1 ? 's' : ''}</span> en esta sesi‚îú‚îÇn. Recibir‚îú√≠n un mensaje autom‚îú√≠tico.
                   </div>
                 )}
 
                 {voluntariosEditorCargando ? (
                   <div className="text-center py-12 text-gray-400">
-                    <p className="text-4xl mb-2">‘≈¶</p>
+                    <p className="text-4xl mb-2">√î√Ö‚îÇ</p>
                     <p>Cargando voluntarios...</p>
                   </div>
                 ) : voluntariosEditorFiltrados.length === 0 ? (
                   <div className="text-center py-12 text-gray-400 bg-gray-50 rounded-2xl">
-                    <p className="text-4xl mb-2">≠Éˆ°</p>
-                    <p className="font-medium">{busquedaEditor ? 'Sin resultados para esa b+¶squeda' : 'No hay voluntarios registrados'}</p>
+                    <p className="text-4xl mb-2">¬≠∆í√∂¬°</p>
+                    <p className="font-medium">{busquedaEditor ? 'Sin resultados para esa b‚îú‚ïësqueda' : 'No hay voluntarios registrados'}</p>
                   </div>
                 ) : (
                   <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
@@ -1666,8 +1666,8 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                                 <p className="font-semibold text-gray-800 text-sm truncate">{volNombre}</p>
                                 <p className="text-xs text-gray-400 truncate">{v.email}</p>
                                 <div className="flex flex-wrap gap-2 mt-0.5">
-                                  {v.municipio && <span className="text-xs text-gray-400">≠ÉÙÏ {v.municipio}</span>}
-                                  {v.telefono && <span className="text-xs text-gray-400">≠ÉÙ◊ {v.telefono}</span>}
+                                  {v.municipio && <span className="text-xs text-gray-400">¬≠∆í√¥√¨ {v.municipio}</span>}
+                                  {v.telefono && <span className="text-xs text-gray-400">¬≠∆í√¥√ó {v.telefono}</span>}
                                 </div>
                               </div>
                             </div>
@@ -1684,7 +1684,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                                   className="px-4 py-1.5 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
                                   style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
                                 >
-                                  {invitando === v.id ? '...' : '≠ÉÙø Invitar'}
+                                  {invitando === v.id ? '...' : '¬≠∆í√¥¬ø Invitar'}
                                 </button>
                               )}
                             </div>
@@ -1698,34 +1698,34 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 <div className="flex gap-3 mt-6 pt-5 border-t border-gray-100">
                   <button onClick={() => setTabEditor('datos')}
                     className="flex-1 py-3 rounded-xl font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition">
-                    ‘Â… Volver a datos
+                    √î√•√â Volver a datos
                   </button>
                   <button onClick={() => { setVista('dashboard'); resetForm() }}
                     className="flex-1 py-3 rounded-xl font-semibold text-white transition hover:opacity-90"
                     style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                    ‘£‡ Terminar
+                    √î¬£√† Terminar
                   </button>
                 </div>
               </div>
             )}
           </div>
         )}
-        {/* ‘ˆ«‘ˆ« PERFIL DE ENTIDAD ‘ˆ«‘ˆ« */}
+        {/* √î√∂√á√î√∂√á PERFIL DE ENTIDAD √î√∂√á√î√∂√á */}
         {vista === 'perfil' && (
           <div className="bg-white rounded-3xl border border-gray-100 overflow-hidden shadow-sm">
             <div className="p-6 border-b border-gray-100" style={{ background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)' }}>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl"
                   style={{ background: 'linear-gradient(135deg, #14532d, #16a34a)' }}>
-                  {esEmpresa ? '≠Éƒ°' : '≠É≈Û'}
+                  {esEmpresa ? '¬≠∆í√Ñ¬°' : '¬≠∆í√Ö√≥'}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">
-                    {tienePerfil ? 'Mi Perfil' : '-ÌBienvenido! Completa tu perfil'}
+                    {tienePerfil ? 'Mi Perfil' : '‚î¨√≠Bienvenido! Completa tu perfil'}
                   </h3>
                   <p className="text-sm text-gray-500">
                     {tienePerfil
-                      ? 'Actualiza los datos de tu organizaci+¶n cuando quieras'
+                      ? 'Actualiza los datos de tu organizaci‚îú‚îÇn cuando quieras'
                       : 'Necesitas completar tu perfil antes de crear actividades'}
                   </p>
                 </div>
@@ -1735,7 +1735,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
             <div className="p-8">
               {!tienePerfil && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3">
-                  <span className="text-2xl">‘‹·¥©≈</span>
+                  <span className="text-2xl">√î√ú√°¬¥¬©√Ö</span>
                   <div>
                     <p className="font-semibold text-amber-800 text-sm">Perfil incompleto</p>
                     <p className="text-amber-700 text-sm mt-0.5">Rellena los campos obligatorios (*) para poder crear actividades e invitar voluntarios.</p>
@@ -1743,16 +1743,16 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 </div>
               )}
 
-              {/* ‘ˆ«‘ˆ« ENTIDAD SOCIAL ‘ˆ«‘ˆ« */}
+              {/* √î√∂√á√î√∂√á ENTIDAD SOCIAL √î√∂√á√î√∂√á */}
               {!esEmpresa && (
                 <>
-                  <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-3 pb-1 border-b border-green-100">Datos de la organizaci+¶n</p>
+                  <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-3 pb-1 border-b border-green-100">Datos de la organizaci‚îú‚îÇn</p>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="md:col-span-2">
                       <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Nombre legal *</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-                        placeholder="Fundaci+¶n / ONG / Asociaci+¶n"
+                        placeholder="Fundaci‚îú‚îÇn / ONG / Asociaci‚îú‚îÇn"
                         value={perfilEntidad.nombre_legal}
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, nombre_legal: e.target.value })} />
                     </div>
@@ -1764,29 +1764,29 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, nif: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">P+Ìgina web</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">P‚îú√≠gina web</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         placeholder="https://..."
                         value={perfilEntidad.web}
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, web: e.target.value })} />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Direcci+¶n *</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Direcci‚îú‚îÇn *</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-                        placeholder="Direcci+¶n completa"
+                        placeholder="Direcci‚îú‚îÇn completa"
                         value={perfilEntidad.direccion}
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, direccion: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Fecha de inscripci+¶n oficial</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Fecha de inscripci‚îú‚îÇn oficial</label>
                       <input type="date" className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         value={perfilEntidad.fecha_inscripcion}
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, fecha_inscripcion: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">N+¶mero de registro</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">N‚îú‚ïëmero de registro</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-                        placeholder="N-¶ registro"
+                        placeholder="N‚î¨‚ïë registro"
                         value={perfilEntidad.numero_registro}
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, numero_registro: e.target.value })} />
                     </div>
@@ -1809,7 +1809,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, admin_email: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Tel+Æfono *</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Tel‚îú¬Æfono *</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         placeholder="600000000"
                         value={perfilEntidad.admin_telefono}
@@ -1834,7 +1834,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         onChange={e => setPerfilEntidad({ ...perfilEntidad, contacto_email: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Tel+Æfono</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Tel‚îú¬Æfono</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         placeholder="600000000"
                         value={perfilEntidad.contacto_telefono}
@@ -1844,7 +1844,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 </>
               )}
 
-              {/* ‘ˆ«‘ˆ« EMPRESA CULTURAL ‘ˆ«‘ˆ« */}
+              {/* √î√∂√á√î√∂√á EMPRESA CULTURAL √î√∂√á√î√∂√á */}
               {esEmpresa && (
                 <>
                   <p className="text-xs font-bold text-green-700 uppercase tracking-wider mb-3 pb-1 border-b border-green-100">Datos de la empresa</p>
@@ -1865,16 +1865,16 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         onChange={e => setPerfilEmpresa({ ...perfilEmpresa, cif: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">P+Ìgina web</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">P‚îú√≠gina web</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         placeholder="https://..."
                         value={perfilEmpresa.web}
                         onChange={e => setPerfilEmpresa({ ...perfilEmpresa, web: e.target.value })} />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Direcci+¶n *</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Direcci‚îú‚îÇn *</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-                        placeholder="Direcci+¶n completa"
+                        placeholder="Direcci‚îú‚îÇn completa"
                         value={perfilEmpresa.direccion}
                         onChange={e => setPerfilEmpresa({ ...perfilEmpresa, direccion: e.target.value })} />
                     </div>
@@ -1886,7 +1886,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         <option value="">Selecciona...</option>
                         <option value="museo">Museo</option>
                         <option value="teatro">Teatro</option>
-                        <option value="musica">M+¶sica / Conciertos</option>
+                        <option value="musica">M‚îú‚ïësica / Conciertos</option>
                         <option value="cine">Cine</option>
                         <option value="danza">Danza</option>
                         <option value="talleres">Talleres culturales</option>
@@ -1898,10 +1898,10 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                       <select className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         value={perfilEmpresa.sistema_canje}
                         onChange={e => setPerfilEmpresa({ ...perfilEmpresa, sistema_canje: e.target.value })}>
-                        <option value="manual">Opci+¶n A ‘«Ù Canje manual (c+¶digo en TPV/web)</option>
-                        <option value="api">Opci+¶n B ‘«Ù API REST (validaci+¶n autom+Ìtica)</option>
-                        <option value="plugin">Opci+¶n C ‘«Ù Plugin (Shopify, WooCommerce...)</option>
-                        <option value="middleware">Opci+¶n D ‘«Ù Middleware (sincronizaci+¶n autom+Ìtica)</option>
+                        <option value="manual">Opci‚îú‚îÇn A √î√á√¥ Canje manual (c‚îú‚îÇdigo en TPV/web)</option>
+                        <option value="api">Opci‚îú‚îÇn B √î√á√¥ API REST (validaci‚îú‚îÇn autom‚îú√≠tica)</option>
+                        <option value="plugin">Opci‚îú‚îÇn C √î√á√¥ Plugin (Shopify, WooCommerce...)</option>
+                        <option value="middleware">Opci‚îú‚îÇn D √î√á√¥ Middleware (sincronizaci‚îú‚îÇn autom‚îú√≠tica)</option>
                       </select>
                     </div>
                   </div>
@@ -1923,7 +1923,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         onChange={e => setPerfilEmpresa({ ...perfilEmpresa, contacto_email: e.target.value })} />
                     </div>
                     <div>
-                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Tel+Æfono *</label>
+                      <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Tel‚îú¬Æfono *</label>
                       <input className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
                         placeholder="600000000"
                         value={perfilEmpresa.contacto_telefono}
@@ -1943,19 +1943,19 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 <button onClick={guardarPerfil} disabled={perfilLoading}
                   className="flex-1 py-3 rounded-xl font-semibold text-white disabled:opacity-50 transition"
                   style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
-                  {perfilLoading ? 'Guardando...' : tienePerfil ? '‘£‡ Actualizar perfil' : '‘£‡ Guardar perfil y continuar'}
+                  {perfilLoading ? 'Guardando...' : tienePerfil ? '√î¬£√† Actualizar perfil' : '√î¬£√† Guardar perfil y continuar'}
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* ‘ˆ«‘ˆ« DELEGADOS ‘ˆ«‘ˆ« */}
+        {/* √î√∂√á√î√∂√á DELEGADOS √î√∂√á√î√∂√á */}
         {vista === 'delegados' && (
           <div>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h3 className="text-lg font-bold text-gray-800">≠ÉÊ— Delegados</h3>
+                <h3 className="text-lg font-bold text-gray-800">¬≠∆í√¶√ë Delegados</h3>
                 <p className="text-sm text-gray-400">Responsables de tu entidad con acceso al panel</p>
               </div>
               <button
@@ -1963,7 +1963,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                 className="px-4 py-2 rounded-xl text-sm font-semibold text-white transition hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
               >
-                ‘◊Ú Nuevo delegado
+                √î√ó√≤ Nuevo delegado
               </button>
             </div>
 
@@ -2008,11 +2008,11 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Contrase+¶a *</label>
+                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">Contrase‚îú‚ñía *</label>
                     <input
                       type="password"
                       className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-green-500"
-                      placeholder="Contrase+¶a de acceso"
+                      placeholder="Contrase‚îú‚ñía de acceso"
                       value={formDelegado.password}
                       onChange={e => setFormDelegado({ ...formDelegado, password: e.target.value })}
                     />
@@ -2031,7 +2031,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                     className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition hover:opacity-90"
                     style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}
                   >
-                    {creandoDelegado ? 'Creando...' : '‘£‡ Crear delegado'}
+                    {creandoDelegado ? 'Creando...' : '√î¬£√† Crear delegado'}
                   </button>
                 </div>
               </div>
@@ -2040,12 +2040,12 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
             {/* Lista de delegados */}
             {delegadosLoading ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
-                <p className="text-4xl mb-2">‘≈¶</p><p>Cargando delegados...</p>
+                <p className="text-4xl mb-2">√î√Ö‚îÇ</p><p>Cargando delegados...</p>
               </div>
             ) : delegados.length === 0 ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl border border-gray-100">
-                <p className="text-4xl mb-2">≠ÉÊÒ</p>
-                <p className="font-medium">No tienes delegados a+¶n</p>
+                <p className="text-4xl mb-2">¬≠∆í√¶√±</p>
+                <p className="font-medium">No tienes delegados a‚îú‚ïën</p>
                 <p className="text-sm mt-1">Crea uno para que pueda gestionar actividades y voluntarios</p>
               </div>
             ) : (
@@ -2066,7 +2066,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                             <p className="font-semibold text-gray-800">{d.nombre}</p>
                             {d.cargo && <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">{d.cargo}</span>}
                             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${d.activo ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                              {d.activo ? '‘˘≈ Activo' : '‘˘≈ Inactivo'}
+                              {d.activo ? '√î√π√Ö Activo' : '√î√π√Ö Inactivo'}
                             </span>
                           </div>
                           <p className="text-sm text-gray-400 truncate">{d.email}</p>
@@ -2081,7 +2081,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                                   }}
                                   className="text-xs bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full hover:bg-green-100 transition cursor-pointer"
                                 >
-                                  ≠ÉÙÔ {a.nombre.length > 30 ? a.nombre.slice(0, 30) + '‘«™' : a.nombre}
+                                  ¬≠∆í√¥√Ø {a.nombre.length > 30 ? a.nombre.slice(0, 30) + '√î√á¬™' : a.nombre}
                                 </button>
                               ))}
                             </div>
@@ -2096,19 +2096,19 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                           onClick={() => setMensajeDelegadoId(mensajeDelegadoId === d.id ? null : d.id)}
                           className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 transition"
                         >
-                          ≠ÉÙÆ Mensaje
+                          ¬≠∆í√¥¬Æ Mensaje
                         </button>
                         <button
                           onClick={() => toggleDelegado(d.id)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${d.activo ? 'bg-yellow-50 text-yellow-600 hover:bg-yellow-100' : 'bg-green-50 text-green-600 hover:bg-green-100'}`}
                         >
-                          {d.activo ? '‘≈© Desactivar' : '‘˚¬ Activar'}
+                          {d.activo ? '√î√Ö¬© Desactivar' : '√î√ª√Ç Activar'}
                         </button>
                         <button
                           onClick={() => eliminarDelegado(d.id)}
                           className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 transition"
                         >
-                          ≠É˘Ê Eliminar
+                          ¬≠∆í√π√¶ Eliminar
                         </button>
                       </div>
                     </div>
@@ -2146,7 +2146,7 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                               className="px-4 py-2 rounded-xl text-sm font-semibold text-white disabled:opacity-50 transition hover:opacity-90"
                               style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}
                             >
-                              {enviandoMensajeDelegado ? 'Enviando...' : '≠ÉÙÆ Enviar'}
+                              {enviandoMensajeDelegado ? 'Enviando...' : '¬≠∆í√¥¬Æ Enviar'}
                             </button>
                           </div>
                         </div>
@@ -2159,12 +2159,12 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
           </div>
         )}
 
-        {/* ‘ˆ«‘ˆ« HORAS PENDIENTES ENTIDAD ‘ˆ«‘ˆ« */}
+        {/* √î√∂√á√î√∂√á HORAS PENDIENTES ENTIDAD √î√∂√á√î√∂√á */}
         {vista === 'horas' && (
           <div>
-            <h3 className="text-lg font-bold text-gray-800 mb-2">‘≈¶¥©≈ Validaci+¶n final de horas</h3>
+            <h3 className="text-lg font-bold text-gray-800 mb-2">√î√Ö‚ñí¬¥¬©√Ö Validaci‚îú‚îÇn final de horas</h3>
             <p className="text-sm text-gray-500 mb-5">
-              Estas horas han sido aprobadas por el delegado. Como entidad, tienes la +¶ltima palabra: al validarlas se suman al saldo disponible del voluntario.
+              Estas horas han sido aprobadas por el delegado. Como entidad, tienes la ‚îú‚ïëltima palabra: al validarlas se suman al saldo disponible del voluntario.
             </p>
 
             {horasEntidadMensaje && (
@@ -2175,13 +2175,13 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
 
             {horasEntidadLoading ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl">
-                <p className="text-4xl mb-2">‘≈¶</p><p>Cargando horas...</p>
+                <p className="text-4xl mb-2">√î√Ö‚îÇ</p><p>Cargando horas...</p>
               </div>
             ) : horasPendientesEntidad.length === 0 ? (
               <div className="text-center py-12 text-gray-400 bg-white rounded-2xl border border-gray-100">
-                <p className="text-4xl mb-2">‘£‡</p>
-                <p className="font-medium">No hay horas pendientes de validaci+¶n</p>
-                <p className="text-sm mt-1">Cuando el delegado apruebe horas, aparecer+Ìn aqu+° para tu validaci+¶n final</p>
+                <p className="text-4xl mb-2">√î¬£√†</p>
+                <p className="font-medium">No hay horas pendientes de validaci‚îú‚îÇn</p>
+                <p className="text-sm mt-1">Cuando el delegado apruebe horas, aparecer‚îú√≠n aqu‚îú¬° para tu validaci‚îú‚îÇn final</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -2192,14 +2192,14 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         <div className="flex items-center gap-2 flex-wrap mb-1">
                           <span className="font-semibold text-gray-800">{h.voluntario_nombre} {h.voluntario_apellidos}</span>
                           <span className="text-xs text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">{h.voluntario_email}</span>
-                          <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">‘£Ù Aprobado por delegado</span>
+                          <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">√î¬£√¥ Aprobado por delegado</span>
                         </div>
                         <p className="text-sm text-gray-600 mb-1">
-                          ≠ÉÙÔ <span className="font-medium">{h.actividad_nombre}</span>
-                          <span className="mx-2 text-gray-300">-¿</span>
-                          ≠ÉÚ… <span className="font-bold text-blue-600">{h.horas}h</span>
-                          <span className="mx-2 text-gray-300">-¿</span>
-                          ≠ÉÙ‡ {new Date(h.fecha_registro).toLocaleDateString('es-ES')}
+                          ¬≠∆í√¥√Ø <span className="font-medium">{h.actividad_nombre}</span>
+                          <span className="mx-2 text-gray-300">‚î¨√Ä</span>
+                          ¬≠∆í√≤√â <span className="font-bold text-blue-600">{h.horas}h</span>
+                          <span className="mx-2 text-gray-300">‚î¨√Ä</span>
+                          ¬≠∆í√¥√† {new Date(h.fecha_registro).toLocaleDateString('es-ES')}
                         </p>
                         {h.notas && <p className="text-xs text-gray-400 italic">"{h.notas}"</p>}
                       </div>
@@ -2208,13 +2208,13 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                           onClick={() => accionHorasEntidad(h.id, 'validar-entidad')}
                           className="px-4 py-2 rounded-xl text-sm font-semibold bg-green-50 text-green-700 hover:bg-green-100 transition"
                         >
-                          ‘£‡ Validar
+                          √î¬£√† Validar
                         </button>
                         <button
                           onClick={() => accionHorasEntidad(h.id, 'rechazar-entidad')}
                           className="px-4 py-2 rounded-xl text-sm font-semibold bg-red-50 text-red-500 hover:bg-red-100 transition"
                         >
-                          ‘ÿÓ Rechazar
+                          √î√ò√Æ Rechazar
                         </button>
                       </div>
                     </div>
@@ -2229,4 +2229,5 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
     </div>
   )
 }
+
 
