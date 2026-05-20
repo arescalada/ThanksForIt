@@ -1458,8 +1458,8 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                             </button>
                           </>
                         )}
-                        {tabVoluntarios === 'solicitudes' && v.vinculacion === 'aceptado' && (
-                          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700">✅ Aceptado</span>
+                        {tabVoluntarios === 'solicitudes' && (v.vinculacion === 'aceptado' || v.vinculacion === 'pendiente') && (
+                          {v.vinculacion === "aceptado" ? <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700">✅ Aceptado</span> : <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-700">⏳ Pendiente</span>}
                         )}
                         {tabVoluntarios === 'todos' && (
                           <span className="text-xs text-gray-300 flex items-center gap-1">Ver detalle →</span>
@@ -2229,6 +2229,8 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
     </div>
   )
 }
+
+
 
 
 
