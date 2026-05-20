@@ -1,8 +1,8 @@
-﻿--
+--
 -- PostgreSQL database dump
 --
 
-\restrict Fu354RZSd7eNjhud0OpJpfFAt8Sy4Sbtcb26b3jdCLa5DljwVkNAJKP0R77qgAT
+\restrict 0ZphNjVd47ftlDtuliJoO9Qe4lKSZJ1kFBzvabo8kBIO6qL3n8kaQLjucksgjrD
 
 -- Dumped from database version 15.17 (Debian 15.17-1.pgdg13+1)
 -- Dumped by pg_dump version 15.17 (Debian 15.17-1.pgdg13+1)
@@ -204,7 +204,7 @@ ALTER FUNCTION public.buscar_actividades(p_texto_busqueda text, p_municipio char
 -- Name: FUNCTION buscar_actividades(p_texto_busqueda text, p_municipio character varying, p_fecha_desde date, p_fecha_hasta date); Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON FUNCTION public.buscar_actividades(p_texto_busqueda text, p_municipio character varying, p_fecha_desde date, p_fecha_hasta date) IS 'B├║squeda avanzada de actividades disponibles';
+COMMENT ON FUNCTION public.buscar_actividades(p_texto_busqueda text, p_municipio character varying, p_fecha_desde date, p_fecha_hasta date) IS 'B??squeda avanzada de actividades disponibles';
 
 
 --
@@ -361,7 +361,7 @@ ALTER FUNCTION public.estadisticas_entidad(p_entidad_id uuid) OWNER TO postgres;
 -- Name: FUNCTION estadisticas_entidad(p_entidad_id uuid); Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON FUNCTION public.estadisticas_entidad(p_entidad_id uuid) IS 'Devuelve estad├¡sticas de una entidad social';
+COMMENT ON FUNCTION public.estadisticas_entidad(p_entidad_id uuid) IS 'Devuelve estad??sticas de una entidad social';
 
 
 --
@@ -411,7 +411,7 @@ BEGIN
         RETURN;
     END IF;
     
-    -- Generar c├│digo ├║nico
+    -- Generar c??digo ??nico
     v_codigo := generar_codigo_canje();
     
     -- Crear el canje
@@ -452,7 +452,7 @@ ALTER FUNCTION public.generar_canje(p_voluntario_id uuid, p_beneficio_id uuid, p
 -- Name: FUNCTION generar_canje(p_voluntario_id uuid, p_beneficio_id uuid, p_dias_validez integer); Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON FUNCTION public.generar_canje(p_voluntario_id uuid, p_beneficio_id uuid, p_dias_validez integer) IS 'Genera un c├│digo de canje para que un voluntario obtenga un beneficio';
+COMMENT ON FUNCTION public.generar_canje(p_voluntario_id uuid, p_beneficio_id uuid, p_dias_validez integer) IS 'Genera un c??digo de canje para que un voluntario obtenga un beneficio';
 
 
 --
@@ -465,7 +465,7 @@ CREATE FUNCTION public.generar_codigo_canje() RETURNS character varying
 DECLARE
     codigo VARCHAR(50);
 BEGIN
-    -- Formato: TBC-XXXX-YY (donde XXXX = n├║mero aleatorio, YY = hash corto)
+    -- Formato: TBC-XXXX-YY (donde XXXX = n??mero aleatorio, YY = hash corto)
     LOOP
         codigo := 'TBC-' || LPAD(FLOOR(RANDOM() * 10000)::TEXT, 4, '0') || '-' || 
                   UPPER(SUBSTRING(MD5(RANDOM()::TEXT) FROM 1 FOR 2));
@@ -489,7 +489,7 @@ DECLARE
     v_actividad RECORD;
     v_inscritos INTEGER;
 BEGIN
-    -- Verificar que la actividad existe y est├í publicada
+    -- Verificar que la actividad existe y est?? publicada
     SELECT * INTO v_actividad
     FROM actividades
     WHERE id = p_actividad_id
@@ -497,17 +497,17 @@ BEGIN
       AND publicar_buscador = true;
     
     IF NOT FOUND THEN
-        RETURN QUERY SELECT false, 'Actividad no disponible para inscripci├│n'::TEXT;
+        RETURN QUERY SELECT false, 'Actividad no disponible para inscripci??n'::TEXT;
         RETURN;
     END IF;
     
-    -- Verificar si ya est├í inscrito
+    -- Verificar si ya est?? inscrito
     IF EXISTS (
         SELECT 1 FROM voluntario_actividad
         WHERE voluntario_id = p_voluntario_id
           AND actividad_id = p_actividad_id
     ) THEN
-        RETURN QUERY SELECT false, 'Ya est├ís inscrito en esta actividad'::TEXT;
+        RETURN QUERY SELECT false, 'Ya est??s inscrito en esta actividad'::TEXT;
         RETURN;
     END IF;
     
@@ -528,7 +528,7 @@ BEGIN
     INSERT INTO voluntario_actividad (voluntario_id, actividad_id)
     VALUES (p_voluntario_id, p_actividad_id);
     
-    RETURN QUERY SELECT true, 'Inscripci├│n exitosa'::TEXT;
+    RETURN QUERY SELECT true, 'Inscripci??n exitosa'::TEXT;
 END;
 $$;
 
@@ -630,7 +630,7 @@ ALTER FUNCTION public.resumen_voluntario(p_voluntario_id uuid) OWNER TO postgres
 -- Name: FUNCTION resumen_voluntario(p_voluntario_id uuid); Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON FUNCTION public.resumen_voluntario(p_voluntario_id uuid) IS 'Devuelve estad├¡sticas generales de un voluntario';
+COMMENT ON FUNCTION public.resumen_voluntario(p_voluntario_id uuid) IS 'Devuelve estad??sticas generales de un voluntario';
 
 
 --
@@ -700,7 +700,7 @@ ALTER FUNCTION public.top_beneficios_canjeados(p_limite integer) OWNER TO postgr
 -- Name: FUNCTION top_beneficios_canjeados(p_limite integer); Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON FUNCTION public.top_beneficios_canjeados(p_limite integer) IS 'Lista los beneficios m├ís canjeados';
+COMMENT ON FUNCTION public.top_beneficios_canjeados(p_limite integer) IS 'Lista los beneficios m??s canjeados';
 
 
 --
@@ -742,27 +742,27 @@ BEGIN
     WHERE c.codigo_canje = p_codigo;
     
     IF NOT FOUND THEN
-        RETURN QUERY SELECT false, NULL::VARCHAR(255), NULL::TEXT, 'C├│digo no encontrado'::TEXT;
+        RETURN QUERY SELECT false, NULL::VARCHAR(255), NULL::TEXT, 'C??digo no encontrado'::TEXT;
         RETURN;
     END IF;
     
     IF v_canje.estado = 'canjeado' THEN
-        RETURN QUERY SELECT false, v_canje.beneficio, v_canje.voluntario, 'C├│digo ya utilizado'::TEXT;
+        RETURN QUERY SELECT false, v_canje.beneficio, v_canje.voluntario, 'C??digo ya utilizado'::TEXT;
         RETURN;
     END IF;
     
     IF v_canje.estado = 'expirado' OR v_canje.fecha_expiracion < CURRENT_TIMESTAMP THEN
-        RETURN QUERY SELECT false, v_canje.beneficio, v_canje.voluntario, 'C├│digo expirado'::TEXT;
+        RETURN QUERY SELECT false, v_canje.beneficio, v_canje.voluntario, 'C??digo expirado'::TEXT;
         RETURN;
     END IF;
     
     IF v_canje.estado = 'cancelado' THEN
-        RETURN QUERY SELECT false, v_canje.beneficio, v_canje.voluntario, 'C├│digo cancelado'::TEXT;
+        RETURN QUERY SELECT false, v_canje.beneficio, v_canje.voluntario, 'C??digo cancelado'::TEXT;
         RETURN;
     END IF;
     
-    -- C├│digo v├ílido
-    RETURN QUERY SELECT true, v_canje.beneficio, v_canje.voluntario, 'C├│digo v├ílido'::TEXT;
+    -- C??digo v??lido
+    RETURN QUERY SELECT true, v_canje.beneficio, v_canje.voluntario, 'C??digo v??lido'::TEXT;
 END;
 $$;
 
@@ -773,7 +773,7 @@ ALTER FUNCTION public.validar_codigo_canje(p_codigo character varying) OWNER TO 
 -- Name: FUNCTION validar_codigo_canje(p_codigo character varying); Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON FUNCTION public.validar_codigo_canje(p_codigo character varying) IS 'Valida si un c├│digo de canje es v├ílido y devuelve informaci├│n del beneficio';
+COMMENT ON FUNCTION public.validar_codigo_canje(p_codigo character varying) IS 'Valida si un c??digo de canje es v??lido y devuelve informaci??n del beneficio';
 
 
 --
@@ -881,7 +881,7 @@ ALTER TABLE public.beneficios OWNER TO postgres;
 -- Name: TABLE beneficios; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE public.beneficios IS 'Cat├ílogo de beneficios culturales ofrecidos';
+COMMENT ON TABLE public.beneficios IS 'Cat??logo de beneficios culturales ofrecidos';
 
 
 --
@@ -922,7 +922,7 @@ COMMENT ON TABLE public.canjes_realizados IS 'Historial de canjes de horas por b
 -- Name: COLUMN canjes_realizados.codigo_canje; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.canjes_realizados.codigo_canje IS 'C├│digo ├║nico generado para validar el canje (ej: TBC-4821-KQ)';
+COMMENT ON COLUMN public.canjes_realizados.codigo_canje IS 'C??digo ??nico generado para validar el canje (ej: TBC-4821-KQ)';
 
 
 --
@@ -1044,7 +1044,7 @@ COMMENT ON TABLE public.horas_registradas IS 'Registro de horas de voluntariado 
 -- Name: COLUMN horas_registradas.fecha_caducidad; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.horas_registradas.fecha_caducidad IS 'Las horas caducan 1 a├▒o despu├®s de su validaci├│n';
+COMMENT ON COLUMN public.horas_registradas.fecha_caducidad IS 'Las horas caducan 1 a??o despu??s de su validaci??n';
 
 
 --
@@ -1106,7 +1106,7 @@ ALTER TABLE public.usuarios OWNER TO postgres;
 -- Name: TABLE usuarios; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE public.usuarios IS 'Tabla base para autenticaci├│n de todos los usuarios del sistema';
+COMMENT ON TABLE public.usuarios IS 'Tabla base para autenticaci??n de todos los usuarios del sistema';
 
 
 --
@@ -1912,5 +1912,5 @@ ALTER TABLE ONLY public.voluntarios
 -- PostgreSQL database dump complete
 --
 
-\unrestrict Fu354RZSd7eNjhud0OpJpfFAt8Sy4Sbtcb26b3jdCLa5DljwVkNAJKP0R77qgAT
+\unrestrict 0ZphNjVd47ftlDtuliJoO9Qe4lKSZJ1kFBzvabo8kBIO6qL3n8kaQLjucksgjrD
 
