@@ -138,7 +138,7 @@ export const getSolicitudesVoluntarios = async (req: AuthRequest, res: Response)
     const entidad_id = entidadResult.rows[0].id;
 
     const result = await query(
-      `SELECT 
+      `SELECT DISTINCT ON (v.id)
          v.id,
          v.usuario_id,
          v.nombre,
@@ -150,12 +150,16 @@ export const getSolicitudesVoluntarios = async (req: AuthRequest, res: Response)
          v.preferencias,
          u.email,
          u.created_at as fecha_registro,
-         ve.estado as vinculacion
-       FROM voluntario_entidad ve
-       JOIN voluntarios v ON ve.voluntario_id = v.id
+         va.estado as vinculacion,
+         a.nombre as actividad_nombre,
+         va.created_at as fecha_invitacion
+       FROM voluntario_actividad va
+       JOIN actividades a ON va.actividad_id = a.id
+       JOIN voluntarios v ON va.voluntario_id = v.id
        JOIN usuarios u ON v.usuario_id = u.id
-       WHERE ve.entidad_id = $1
-       ORDER BY ve.fecha_asociacion DESC`,
+       WHERE a.entidad_id = $1
+         AND va.estado IN ('pendiente', 'confirmado', 'rechazado', 'invitado')
+       ORDER BY v.id, va.created_at DESC`,
       [entidad_id]
     );
     res.json(result.rows);
