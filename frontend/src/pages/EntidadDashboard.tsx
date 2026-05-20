@@ -1443,10 +1443,10 @@ export default function EntidadDashboard({ usuario, onLogout }: Props) {
                         </div>
                       </div>
                       <div className="flex flex-col gap-2 flex-shrink-0" onClick={e => e.stopPropagation()}>
-                        {tabVoluntarios === 'solicitudes' && v.vinculacion === 'aceptado' && (
-                          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700">Aceptado</span>
+                        {tabVoluntarios === 'solicitudes' && (v.vinculacion === 'aceptado' || v.vinculacion === 'confirmado') && (
+                          <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700">Confirmado</span>
                         )}
-                        {tabVoluntarios === 'solicitudes' && v.vinculacion === 'pendiente' && (
+                        {tabVoluntarios === 'solicitudes' && (v.vinculacion === 'pendiente' || v.vinculacion === 'inscrito') && (
                           <span className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-700">Pendiente</span>
                         )}
                         {tabVoluntarios === 'solicitudes' && v.vinculacion === 'rechazado' && (
