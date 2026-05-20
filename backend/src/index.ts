@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 // Middlewares globales
 app.use(helmet()); // Seguridad con headers HTTP
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: ['http://localhost:5173', 'https://thanks-for-it.vercel.app', /\.vercel\.app$/],
   credentials: true
 }));
 app.use(morgan('dev')); // Logging de requests
@@ -121,6 +121,7 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
 
 
 
