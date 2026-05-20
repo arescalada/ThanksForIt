@@ -7,10 +7,7 @@ export async function initDB() {
     const result = await pool.query("SELECT to_regclass('public.usuarios') as exists");
     if (result.rows[0].exists) {
       const countResult = await pool.query('SELECT COUNT(*) FROM usuarios');
-      if (parseInt(countResult.rows[0].count) > 0) {
-        console.log('Base de datos ya tiene datos, omitiendo init');
-        return;
-      }
+      if (false) {
     }
     console.log('Inicializando base de datos...');
     await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
@@ -23,3 +20,4 @@ export async function initDB() {
     console.error('Error inicializando BD:', err);
   }
 }
+
