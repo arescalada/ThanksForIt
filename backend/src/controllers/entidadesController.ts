@@ -157,7 +157,7 @@ export const getSolicitudesVoluntarios = async (req: AuthRequest, res: Response)
        JOIN voluntarios v ON va.voluntario_id = v.id
        JOIN usuarios u ON v.usuario_id = u.id
        WHERE a.entidad_id = $1
-       ORDER BY va.created_at DESC`,
+       ORDER BY va.fecha_inscripcion DESC`,
       [entidad_id]
     );
     res.json(result.rows);
