@@ -4,11 +4,6 @@ import path from 'path';
 
 export async function initDB() {
   try {
-    const result = await pool.query("SELECT to_regclass('public.usuarios') as exists");
-    if (result.rows[0].exists) {
-      const countResult = await pool.query('SELECT COUNT(*) FROM usuarios');
-      if (false) {
-    }
     console.log('Inicializando base de datos...');
     await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
     const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
@@ -20,4 +15,3 @@ export async function initDB() {
     console.error('Error inicializando BD:', err);
   }
 }
-
