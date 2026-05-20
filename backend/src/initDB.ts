@@ -5,7 +5,11 @@ import path from 'path';
 export async function initDB() {
   try {
     console.log('Inicializando base de datos...');
-    await pool.query('DROP SCHEMA public CASCADE; CREATE SCHEMA public;');
+    const result = await pool.query("SELECT to_regclass('public.usuarios') as exists");
+    if (result.rows[0].exists) {
+      console.log('Base de datos ya inicializada, omitiendo schema.');
+      return;
+    }
     const schema = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
     await pool.query(schema);
     const seed = fs.readFileSync(path.join(__dirname, 'seed.sql'), 'utf8');
