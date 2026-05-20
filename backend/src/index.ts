@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import pool from './config/database';
+import { initDB } from './initDB';
 
 
 // Importar rutas
@@ -121,6 +122,8 @@ process.on('SIGINT', () => {
 });
 
 export default app;
+
+
 
 
 
