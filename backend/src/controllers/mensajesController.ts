@@ -11,9 +11,12 @@ export const getMisMensajes = async (req: AuthRequest, res: Response) => {
     const result = await query(
       `SELECT m.*,
               u_remitente.email as remitente_email,
-              u_remitente.tipo_usuario as remitente_tipo
+              u_remitente.tipo_usuario as remitente_tipo,
+              COALESCE(v.nombre || ' ' || v.apellidos, e.nombre_legal, u_remitente.email) as remitente_nombre
        FROM mensajes m
        JOIN usuarios u_remitente ON m.remitente_id = u_remitente.id
+       LEFT JOIN voluntarios v ON v.usuario_id = u_remitente.id
+       LEFT JOIN entidades_sociales e ON e.usuario_id = u_remitente.id
        WHERE m.destinatario_id = $1
          AND m.remitente_id != m.destinatario_id
          AND (m.relacionado_tipo IS NULL OR m.relacionado_tipo NOT IN ('chat_directo', 'chat_actividad'))
@@ -255,13 +258,16 @@ export const getConversaciones = async (req: AuthRequest, res: Response) => {
          CASE WHEN remitente_id = $1 THEN destinatario_id ELSE remitente_id END as otro_usuario_id,
          u.email as otro_email,
          u.tipo_usuario as otro_tipo,
+         COALESCE(v.nombre || ' ' || v.apellidos, e.nombre_legal, u.email) as otro_nombre,
          MAX(m.created_at) as ultima_fecha,
          COUNT(*) FILTER (WHERE m.leido = false AND m.destinatario_id = $1 AND m.remitente_id != $1) as no_leidos
        FROM mensajes m
        JOIN usuarios u ON u.id = CASE WHEN m.remitente_id = $1 THEN m.destinatario_id ELSE m.remitente_id END
+       LEFT JOIN voluntarios v ON v.usuario_id = u.id
+       LEFT JOIN entidades_sociales e ON e.usuario_id = u.id
        WHERE m.relacionado_tipo = 'chat_directo'
          AND (m.remitente_id = $1 OR m.destinatario_id = $1)
-       GROUP BY otro_usuario_id, u.email, u.tipo_usuario
+       GROUP BY otro_usuario_id, u.email, u.tipo_usuario, v.nombre, v.apellidos, e.nombre_legal
        ORDER BY ultima_fecha DESC`,
       [usuarioId]
     );
@@ -382,14 +388,17 @@ export const getConversacionesActividad = async (req: AuthRequest, res: Response
          CASE WHEN m.remitente_id = $1 THEN m.destinatario_id ELSE m.remitente_id END as otro_usuario_id,
          u.email as otro_email,
          u.tipo_usuario as otro_tipo,
+         COALESCE(v.nombre || ' ' || v.apellidos, e.nombre_legal, u.email) as otro_nombre,
          MAX(m.created_at) as ultima_fecha,
          COUNT(*) FILTER (WHERE m.leido = false AND m.destinatario_id = $1 AND m.remitente_id != $1) as no_leidos
        FROM mensajes m
        JOIN usuarios u ON u.id = CASE WHEN m.remitente_id = $1 THEN m.destinatario_id ELSE m.remitente_id END
+       LEFT JOIN voluntarios v ON v.usuario_id = u.id
+       LEFT JOIN entidades_sociales e ON e.usuario_id = u.id
        JOIN actividades a ON a.id = m.actividad_id
        WHERE m.relacionado_tipo = 'chat_actividad'
          AND (m.remitente_id = $1 OR m.destinatario_id = $1)
-       GROUP BY m.actividad_id, a.nombre, a.fecha_fin, otro_usuario_id, u.email, u.tipo_usuario
+       GROUP BY m.actividad_id, a.nombre, a.fecha_fin, otro_usuario_id, u.email, u.tipo_usuario, v.nombre, v.apellidos, e.nombre_legal
        ORDER BY ultima_fecha DESC`,
       [usuarioId]
     );

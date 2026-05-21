@@ -7,6 +7,7 @@ interface Mensaje {
   remitente_id: string
   remitente_email: string
   remitente_tipo: string
+  remitente_nombre?: string
   asunto: string
   cuerpo: string
   leido: boolean
@@ -27,6 +28,7 @@ interface Conversacion {
   otro_usuario_id: string
   otro_email: string
   otro_tipo: string
+  otro_nombre?: string
   ultima_fecha: string
   no_leidos?: number
 }
@@ -38,6 +40,7 @@ interface ConversacionActividad {
   otro_usuario_id: string
   otro_email: string
   otro_tipo: string
+  otro_nombre?: string
   ultima_fecha: string
   no_leidos?: number
 }
@@ -76,7 +79,7 @@ export default function Mensajes({
   // Chat directo
   const [conversaciones, setConversaciones] = useState<Conversacion[]>([])
   const [convLoading, setConvLoading] = useState(false)
-  const [chatActivo, setChatActivo] = useState<{ usuarioId: string; email: string } | null>(
+  const [chatActivo, setChatActivo] = useState<{ usuarioId: string; email: string; nombre?: string } | null>(
     chatInicialUsuarioId && !chatInicialActividadId
       ? { usuarioId: chatInicialUsuarioId, email: chatInicialEmail || '' }
       : null
@@ -94,6 +97,7 @@ export default function Mensajes({
     actividadNombre: string
     otroUsuarioId: string
     otroEmail: string
+    otroNombre?: string
     terminada: boolean
   } | null>(
     chatInicialActividadId && chatInicialUsuarioId
@@ -154,7 +158,8 @@ export default function Mensajes({
           chatActividadActivo.actividadId,
           chatActividadActivo.actividadNombre,
           chatActividadActivo.otroUsuarioId,
-          chatActividadActivo.otroEmail
+          chatActividadActivo.otroEmail,
+          chatActividadActivo.otroNombre
         )
       }
     }
@@ -199,7 +204,8 @@ export default function Mensajes({
         chatInicialActividadId,
         chatInicialActividadNombre || '',
         chatInicialUsuarioId,
-        chatInicialEmail || ''
+        chatInicialEmail || '',
+        undefined
       )
     }
   }, [])
@@ -311,8 +317,8 @@ export default function Mensajes({
     } catch (err) { console.error(err) }
   }
 
-  const abrirChat = async (otroUsuarioId: string, otroEmail: string) => {
-    setChatActivo({ usuarioId: otroUsuarioId, email: otroEmail })
+  const abrirChat = async (otroUsuarioId: string, otroEmail: string, otroNombre?: string) => {
+    setChatActivo({ usuarioId: otroUsuarioId, email: otroEmail, nombre: otroNombre })
     setChatLoading(true)
     try { await cargarChatMensajes(otroUsuarioId) }
     finally { setChatLoading(false) }
@@ -360,9 +366,10 @@ export default function Mensajes({
     actividadId: string,
     actividadNombre: string,
     otroUsuarioId: string,
-    otroEmail: string
+    otroEmail: string,
+    otroNombre?: string
   ) => {
-    setChatActividadActivo({ actividadId, actividadNombre, otroUsuarioId, otroEmail, terminada: false })
+    setChatActividadActivo({ actividadId, actividadNombre, otroUsuarioId, otroEmail, otroNombre, terminada: false })
     setChatActividadLoading(true)
     try {
       const res = await axios.get(
@@ -370,7 +377,7 @@ export default function Mensajes({
         { headers: getAuthHeaders() }
       )
       setChatActividadMensajes(res.data.mensajes)
-      setChatActividadActivo({ actividadId, actividadNombre, otroUsuarioId, otroEmail, terminada: res.data.actividadTerminada })
+      setChatActividadActivo({ actividadId, actividadNombre, otroUsuarioId, otroEmail, otroNombre, terminada: res.data.actividadTerminada })
     } catch (err) { console.error(err) }
     finally { setChatActividadLoading(false) }
     cargarConversacionesActividad()
@@ -501,7 +508,12 @@ export default function Mensajes({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start mb-0.5">
-                            <p className={`text-sm truncate ${!msg.leido ? 'font-semibold text-gray-800' : 'text-gray-600'}`}>{msg.remitente_email}</p>
+                            <div className="flex-1 min-w-0">
+                              {msg.remitente_nombre && msg.remitente_nombre !== msg.remitente_email && (
+                                <p className={`text-sm truncate ${!msg.leido ? 'font-semibold text-gray-800' : 'text-gray-700'}`}>{msg.remitente_nombre}</p>
+                              )}
+                              <p className={`text-xs truncate ${!msg.leido ? 'font-medium text-gray-500' : 'text-gray-400'}`}>{msg.remitente_email}</p>
+                            </div>
                             <span className="text-xs text-gray-400 flex-shrink-0 ml-2">{formatFecha(msg.created_at)}</span>
                           </div>
                           <p className={`text-sm truncate ${!msg.leido ? 'font-medium text-gray-700' : 'text-gray-500'}`}>{msg.asunto}</p>
@@ -534,7 +546,14 @@ export default function Mensajes({
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 mb-1">{seleccionado.asunto}</h3>
                     <p className="text-sm text-gray-400">
-                      De: <span className="text-gray-600">{seleccionado.remitente_email}</span>
+                      De: <span className="text-gray-800 font-medium">
+                        {seleccionado.remitente_nombre && seleccionado.remitente_nombre !== seleccionado.remitente_email
+                          ? seleccionado.remitente_nombre
+                          : seleccionado.remitente_email}
+                      </span>
+                      {seleccionado.remitente_nombre && seleccionado.remitente_nombre !== seleccionado.remitente_email && (
+                        <span className="ml-1 text-gray-400">({seleccionado.remitente_email})</span>
+                      )}
                       <span className="mx-2">·</span>
                       {new Date(seleccionado.created_at).toLocaleString('es-ES', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </p>
@@ -608,7 +627,9 @@ export default function Mensajes({
                 {respondiendoMensaje === seleccionado.id && (
                   <div className="mt-4 border-t border-gray-100 pt-4 space-y-3">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                      Respondiendo a {seleccionado.remitente_email}
+                      Respondiendo a {seleccionado.remitente_nombre && seleccionado.remitente_nombre !== seleccionado.remitente_email
+                        ? `${seleccionado.remitente_nombre} (${seleccionado.remitente_email})`
+                        : seleccionado.remitente_email}
                     </p>
                     <input
                       className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:outline-none focus:border-blue-400"
@@ -660,14 +681,19 @@ export default function Mensajes({
                   </div>
                 ) : (
                   conversaciones.map(conv => (
-                    <div key={conv.otro_usuario_id} onClick={() => abrirChat(conv.otro_usuario_id, conv.otro_email)}
+                    <div key={conv.otro_usuario_id} onClick={() => abrirChat(conv.otro_usuario_id, conv.otro_email, conv.otro_nombre)}
                       className={`flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition border-b border-gray-50 ${chatActivo?.usuarioId === conv.otro_usuario_id ? 'bg-green-50' : ''}`}>
                       <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
                         style={{ background: 'linear-gradient(135deg, #16a34a, #15803d)' }}>
                         {conv.otro_email[0]?.toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 truncate">{conv.otro_email}</p>
+                        <p className="text-sm font-medium text-gray-800 truncate">
+                          {conv.otro_nombre && conv.otro_nombre !== conv.otro_email ? conv.otro_nombre : conv.otro_email}
+                        </p>
+                        {conv.otro_nombre && conv.otro_nombre !== conv.otro_email && (
+                          <p className="text-xs text-gray-400 truncate">{conv.otro_email}</p>
+                        )}
                         <p className="text-xs text-gray-400">{getTipoIcon(conv.otro_tipo)} {conv.otro_tipo}</p>
                       </div>
                       <div className="flex flex-col items-end gap-1">
@@ -701,7 +727,12 @@ export default function Mensajes({
                       {chatActivo.email[0]?.toUpperCase()}
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-800 text-sm">{chatActivo.email}</p>
+                      <p className="font-semibold text-gray-800 text-sm">
+                        {chatActivo.nombre && chatActivo.nombre !== chatActivo.email ? chatActivo.nombre : chatActivo.email}
+                      </p>
+                      {chatActivo.nombre && chatActivo.nombre !== chatActivo.email && (
+                        <p className="text-xs text-gray-400">{chatActivo.email}</p>
+                      )}
                       <p className="text-xs text-green-600">Chat directo</p>
                     </div>
                   </div>
@@ -776,7 +807,7 @@ export default function Mensajes({
                     return (
                       <div
                         key={`${conv.actividad_id}-${conv.otro_usuario_id}`}
-                        onClick={() => abrirChatActividad(conv.actividad_id, conv.actividad_nombre, conv.otro_usuario_id, conv.otro_email)}
+                        onClick={() => abrirChatActividad(conv.actividad_id, conv.actividad_nombre, conv.otro_usuario_id, conv.otro_email, conv.otro_nombre)}
                         className={`flex items-start gap-3 px-4 py-3 cursor-pointer hover:bg-gray-50 transition border-b border-gray-50 ${isActivo ? 'bg-green-50' : ''}`}
                       >
                         <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0"
@@ -785,7 +816,12 @@ export default function Mensajes({
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-bold text-green-700 truncate">{conv.actividad_nombre}</p>
-                          <p className="text-sm text-gray-700 truncate">{conv.otro_email}</p>
+                          <p className="text-sm text-gray-700 truncate">
+                            {conv.otro_nombre && conv.otro_nombre !== conv.otro_email ? conv.otro_nombre : conv.otro_email}
+                          </p>
+                          {conv.otro_nombre && conv.otro_nombre !== conv.otro_email && (
+                            <p className="text-xs text-gray-400 truncate">{conv.otro_email}</p>
+                          )}
                           {terminada && <span className="text-xs text-gray-400">🔒 Actividad finalizada</span>}
                         </div>
                         <div className="flex flex-col items-end gap-1">
@@ -821,7 +857,14 @@ export default function Mensajes({
                       {chatActividadActivo.otroEmail[0]?.toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-800 text-sm truncate">{chatActividadActivo.otroEmail}</p>
+                      <p className="font-semibold text-gray-800 text-sm truncate">
+                        {chatActividadActivo.otroNombre && chatActividadActivo.otroNombre !== chatActividadActivo.otroEmail
+                          ? chatActividadActivo.otroNombre
+                          : chatActividadActivo.otroEmail}
+                      </p>
+                      {chatActividadActivo.otroNombre && chatActividadActivo.otroNombre !== chatActividadActivo.otroEmail && (
+                        <p className="text-xs text-gray-400 truncate">{chatActividadActivo.otroEmail}</p>
+                      )}
                       <p className="text-xs text-green-600 truncate">🎯 {chatActividadActivo.actividadNombre}</p>
                     </div>
                     {chatActividadActivo.terminada && (
