@@ -7,6 +7,7 @@ interface Usuario {
   email: string
   tipo_usuario: string
   created_at: string
+  comentarios?: string
 }
 
 interface HoraPendiente {
@@ -35,6 +36,10 @@ export default function Admin({ onLogout }: Props) {
   const [horasPendientes, setHorasPendientes] = useState<HoraPendiente[]>([])
   const [stats, setStats] = useState<Estadisticas>({ total_usuarios: 0, total_voluntarios: 0, total_horas_validadas: 0, total_canjes: 0 })
   const [loading, setLoading] = useState(false)
+  // Comentarios: guardamos el texto en edición por usuario
+  const [comentariosEdit, setComentariosEdit] = useState<Record<string, string>>({})
+  const [guardando, setGuardando] = useState<string | null>(null)
+  const [guardadoOk, setGuardadoOk] = useState<string | null>(null)
 
   useEffect(() => { cargarEstadisticas() }, [])
 
@@ -57,6 +62,10 @@ export default function Admin({ onLogout }: Props) {
       setLoading(true)
       const res = await axios.get('/api/admin/usuarios', { headers: getAuthHeaders() })
       setUsuarios(res.data)
+      // Inicializar los comentarios en edición con los valores actuales
+      const init: Record<string, string> = {}
+      res.data.forEach((u: Usuario) => { init[u.id] = u.comentarios || '' })
+      setComentariosEdit(init)
     } catch (err) {
       console.error(err)
     } finally {
@@ -86,6 +95,26 @@ export default function Admin({ onLogout }: Props) {
       cargarEstadisticas()
     } catch (err: any) {
       alert(err.response?.data?.error || 'Error al validar hora')
+    }
+  }
+
+  const guardarComentario = async (usuarioId: string) => {
+    try {
+      setGuardando(usuarioId)
+      await axios.put(
+        `/api/admin/usuarios/${usuarioId}/comentario`,
+        { comentarios: comentariosEdit[usuarioId] || '' },
+        { headers: getAuthHeaders() }
+      )
+      setUsuarios(prev => prev.map(u =>
+        u.id === usuarioId ? { ...u, comentarios: comentariosEdit[usuarioId] } : u
+      ))
+      setGuardadoOk(usuarioId)
+      setTimeout(() => setGuardadoOk(null), 2000)
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Error al guardar comentario')
+    } finally {
+      setGuardando(null)
     }
   }
 
@@ -155,6 +184,7 @@ export default function Admin({ onLogout }: Props) {
                     <th className="px-6 py-3 text-left">Email</th>
                     <th className="px-6 py-3 text-left">Tipo</th>
                     <th className="px-6 py-3 text-left">Registrado</th>
+                    <th className="px-6 py-3 text-left">Comentarios</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -167,6 +197,30 @@ export default function Admin({ onLogout }: Props) {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-500">{new Date(u.created_at).toLocaleDateString('es-ES')}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            maxLength={120}
+                            className="flex-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-green-500 min-w-[180px]"
+                            placeholder="Añadir comentario..."
+                            value={comentariosEdit[u.id] ?? ''}
+                            onChange={e => setComentariosEdit(prev => ({ ...prev, [u.id]: e.target.value }))}
+                            onKeyDown={e => e.key === 'Enter' && guardarComentario(u.id)}
+                          />
+                          <button
+                            onClick={() => guardarComentario(u.id)}
+                            disabled={guardando === u.id}
+                            className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition hover:opacity-90 disabled:opacity-50 flex-shrink-0"
+                            style={{ background: guardadoOk === u.id ? '#16a34a' : 'linear-gradient(135deg, #16a34a, #15803d)' }}
+                          >
+                            {guardando === u.id ? '...' : guardadoOk === u.id ? '✅' : 'Guardar'}
+                          </button>
+                        </div>
+                        <p className="text-xs text-gray-300 mt-1 text-right">
+                          {(comentariosEdit[u.id] ?? '').length}/120
+                        </p>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

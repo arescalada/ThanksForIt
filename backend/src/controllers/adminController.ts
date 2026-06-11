@@ -32,12 +32,37 @@ export const getEstadisticas = async (req: AuthRequest, res: Response) => {
 export const getUsuarios = async (req: AuthRequest, res: Response) => {
   try {
     const result = await query(
-      `SELECT id, email, tipo_usuario, created_at FROM usuarios ORDER BY created_at DESC`
+      `SELECT id, email, tipo_usuario, created_at, comentarios FROM usuarios ORDER BY created_at DESC`
     );
     res.json(result.rows);
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
     res.status(500).json({ error: 'Error al obtener usuarios' });
+  }
+};
+
+export const actualizarComentarioUsuario = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { comentarios } = req.body;
+
+    if (comentarios !== undefined && comentarios.length > 120) {
+      return res.status(400).json({ error: 'El comentario no puede superar los 120 caracteres' });
+    }
+
+    const result = await query(
+      `UPDATE usuarios SET comentarios = $1 WHERE id = $2 RETURNING id, email, comentarios`,
+      [comentarios ?? null, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error al actualizar comentario:', error);
+    res.status(500).json({ error: 'Error al actualizar comentario' });
   }
 };
 

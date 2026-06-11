@@ -4,7 +4,8 @@ import {
   getUsuarios,
   getHorasPendientes,
   validarHoras,
-  rechazarHoras
+  rechazarHoras,
+  actualizarComentarioUsuario
 } from '../controllers/adminController';
 import { authenticate, authorize } from '../middleware/auth';
 
@@ -18,5 +19,6 @@ router.get('/usuarios', getUsuarios);
 router.get('/horas-pendientes', getHorasPendientes);
 router.put('/horas/:id/validar', validarHoras);
 router.put('/horas/:id/rechazar', rechazarHoras);
+router.put('/usuarios/:id/comentario', actualizarComentarioUsuario);
 
 export default router;

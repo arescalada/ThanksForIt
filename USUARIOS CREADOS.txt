@@ -1,3 +1,12 @@
+
+Eso crea admin@thanksforit.com con contraseña password.
+
+Ya puedes iniciar sesión en https://thanks-for-it.vercel.app con:
+
+Email: admin@thanksforit.com
+Contraseña: password
+
+
 voluntario@voluntario.com — password
 voluntario1@voluntario.com — password
 voluntario2@voluntario.com — password
@@ -15,3 +24,10 @@ empresacultural1@empresacultural.com — password
 empresacultural2@empresacultural.com — password
 empresacultural3@empresacultural.com — password
 empresacultural4@empresacultural.com — password
+
+
+Marcelino Perez
+coordinadorsocial2@entidadsocial.com
+
+Coordinador 1
+coordinadorsocial1@entidadsocial.com
